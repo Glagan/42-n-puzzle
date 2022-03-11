@@ -1,21 +1,5 @@
-use std::env;
 use std::fs;
 use std::num::ParseIntError;
-
-#[derive(Debug)]
-pub struct Config {
-    pub files: Vec<String>,
-}
-
-impl Config {
-    pub fn new() -> Result<Config, &'static str> {
-        let files: Vec<String> = env::args().skip(1).collect();
-        if files.len() == 0 {
-            return Err("You must add at least one puzzle");
-        }
-        Ok(Config { files })
-    }
-}
 
 #[derive(Debug)]
 pub struct Puzzle {
