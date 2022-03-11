@@ -1,6 +1,7 @@
 use std::process;
 
 mod config;
+mod goal;
 mod puzzle;
 
 fn main() {
@@ -15,5 +16,7 @@ fn main() {
             process::exit(1);
         });
         println!("{:#?}", puzzle);
+        let goal = goal::generate(3);
+        println!("goal {:#?}", goal);
     }
 }
