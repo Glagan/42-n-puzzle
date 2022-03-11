@@ -3,8 +3,8 @@ use std::num::ParseIntError;
 
 #[derive(Debug)]
 pub struct Puzzle {
-    size: u32,
-    map: Vec<u32>,
+    pub size: u32,
+    pub map: Vec<u32>,
 }
 
 impl Puzzle {

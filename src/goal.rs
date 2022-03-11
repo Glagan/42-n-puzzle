@@ -41,7 +41,6 @@ pub fn generate(size: u32) -> Result<Vec<u32>, String> {
     };
     // Iterate for each cells to add each numbers in "snail" order
     for _ in 0..puzzle_size - 1 {
-        println!("cell ({},{}) = {}", cursor.x, cursor.y, cursor.value);
         let v: &mut u32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
         *v = cursor.value;
         cursor.value += 1;

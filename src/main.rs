@@ -1,7 +1,9 @@
 use std::process;
 
+mod a_star;
 mod config;
 mod goal;
+mod heuristic;
 mod puzzle;
 
 fn main() {
@@ -16,7 +18,11 @@ fn main() {
             process::exit(1);
         });
         println!("{:#?}", puzzle);
-        let goal = goal::generate(3);
-        println!("goal {:#?}", goal);
+        let goal = goal::generate(puzzle.size).unwrap_or_else(|err| {
+            eprintln!("#> `{}`: {}", puzzle_path, err);
+            process::exit(1);
+        });
+        println!("Goal {:#?}", goal);
+        a_star::solve(&puzzle.map, &goal, heuristic::manhattan);
     }
 }
