@@ -1,0 +1,8 @@
+# This puzzle is parsable
+3
+## -- start
+6 7  5
+# Super comment
+4  1 8 # Once again
+0  2  3
+# -- end
