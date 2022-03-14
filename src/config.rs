@@ -8,7 +8,7 @@ pub struct Config {
 impl Config {
     pub fn new() -> Result<Config, &'static str> {
         let files: Vec<String> = env::args().skip(1).collect();
-        if files.len() == 0 {
+        if !files.is_empty() {
             return Err("You must add at least one puzzle");
         }
         Ok(Config { files })

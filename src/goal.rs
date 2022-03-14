@@ -1,31 +1,26 @@
-enum Direction {
-    Left,
-    Right,
-    Down,
-    Up,
-}
+use npuzzle::{Direction, Node};
 
 struct Border {
-    max: u32,
-    left: u32,
-    top: u32,
-    right: u32,
-    bottom: u32,
+    max: i32,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
 }
 
 struct Cursor {
-    x: u32,
-    y: u32,
+    x: i32,
+    y: i32,
     direction: Direction,
-    value: u32,
+    value: i32,
 }
 
-pub fn generate(size: u32) -> Result<Vec<u32>, String> {
+pub fn generate(size: i32) -> Result<Node, String> {
     if size < 3 {
         return Err(format!("Invalid size {}, must be at least 3", size));
     }
     let puzzle_size = size * size;
-    let mut solution: Vec<u32> = (1..=puzzle_size).collect();
+    let mut solution: Node = (1..=puzzle_size).collect();
     let mut border = Border {
         max: size - 1,
         left: 0,
@@ -41,7 +36,7 @@ pub fn generate(size: u32) -> Result<Vec<u32>, String> {
     };
     // Iterate for each cells to add each numbers in "snail" order
     for _ in 0..puzzle_size - 1 {
-        let v: &mut u32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
+        let v: &mut i32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
         *v = cursor.value;
         cursor.value += 1;
         // Update direction
@@ -59,13 +54,13 @@ pub fn generate(size: u32) -> Result<Vec<u32>, String> {
                 }
             }
             Direction::Left => {
-                if cursor.x == 0 + border.left {
+                if cursor.x == border.left {
                     cursor.direction = Direction::Up;
                     border.bottom += 1;
                 }
             }
             Direction::Up => {
-                if cursor.y == 0 + border.top {
+                if cursor.y == border.top {
                     cursor.direction = Direction::Right;
                     border.left += 1;
                 }
@@ -84,7 +79,7 @@ pub fn generate(size: u32) -> Result<Vec<u32>, String> {
         };
     }
     // Last empty cell
-    let v: &mut u32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
+    let v: &mut i32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
     *v = 0;
     Ok(solution)
 }
@@ -92,7 +87,7 @@ pub fn generate(size: u32) -> Result<Vec<u32>, String> {
 #[test]
 fn test_generate_goal_2() {
     let solution = generate(2);
-    assert_eq!(true, solution.is_err())
+    assert!(solution.is_err())
 }
 
 #[test]

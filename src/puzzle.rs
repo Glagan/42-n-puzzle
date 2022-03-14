@@ -3,14 +3,14 @@ use std::num::ParseIntError;
 
 #[derive(Debug)]
 pub struct Puzzle {
-    pub size: u32,
-    pub map: Vec<u32>,
+    pub size: i32,
+    pub map: Vec<i32>,
 }
 
 impl Puzzle {
-    fn parse_line(line: &str) -> Result<Option<Vec<u32>>, String> {
+    fn parse_line(line: &str) -> Result<Option<Vec<i32>>, String> {
         let mut line = line.trim();
-        if line.len() == 0 {
+        if !line.is_empty() {
             return Ok(None);
         }
         // Remove comment
@@ -22,29 +22,29 @@ impl Puzzle {
             line = (&line[0..byte]).trim()
         }
         // Parse each cols
-        let cols: Vec<Result<u32, ParseIntError>> = line
+        let cols: Vec<Result<i32, ParseIntError>> = line
             .split_whitespace()
-            .filter(|col| col.len() > 0)
+            .filter(|col| !col.is_empty())
             .map(|col| col.trim().parse())
             .collect();
-        let mut clean_cols: Vec<u32> = Vec::new();
+        let mut clean_cols: Vec<i32> = Vec::new();
         for col in cols {
             if col.is_err() {
                 return Err(format!("Failed to parse line `{}`: {:#?}", line, col));
             }
             clean_cols.push(col.unwrap())
         }
-        return Ok(Some(clean_cols));
+        Ok(Some(clean_cols))
     }
 
     fn parse_content(content: &str) -> Result<Puzzle, String> {
-        let mut size: u32 = 0;
+        let mut size: i32 = 0;
         let mut empty_col: bool = false;
-        let mut map: Vec<u32> = Vec::new();
+        let mut map: Vec<i32> = Vec::new();
         // Parse each lines and check for errors
         for line in content.lines() {
             let parsed_line = Puzzle::parse_line(line)?;
-            if let None = parsed_line {
+            if parsed_line.is_none() {
                 continue;
             } else if let Some(cols) = parsed_line {
                 if size == 0 {
@@ -78,7 +78,7 @@ impl Puzzle {
             }
         }
         // Check final size, in case of missing or extra lines
-        let cell_count: u32 = map.len().try_into().unwrap();
+        let cell_count: i32 = map.len().try_into().unwrap();
         let expected_count = size * size;
         if cell_count != expected_count {
             return Err(format!(
@@ -86,7 +86,7 @@ impl Puzzle {
                 cell_count, expected_count
             ));
         }
-        return Ok(Puzzle { size, map });
+        Ok(Puzzle { size, map })
     }
 
     pub fn new(path: &str) -> Result<Puzzle, String> {

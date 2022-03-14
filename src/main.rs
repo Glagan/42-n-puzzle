@@ -23,6 +23,6 @@ fn main() {
             process::exit(1);
         });
         println!("Goal {:#?}", goal);
-        a_star::solve(&puzzle.map, &goal, heuristic::manhattan);
+        a_star::solve(&puzzle, &goal, heuristic::manhattan);
     }
 }
