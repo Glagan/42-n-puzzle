@@ -33,11 +33,14 @@ fn main() {
             // Ok(solution) => println!("#> Solution {:#?}", solution),
             Ok(solution) => {
                 println!(
-                    "#> Solution found ({:#?} steps) in {:.2?}",
-                    solution.len(),
+                    "#> Solution found ({:#?} {}) in {:.2?}",
+                    solution.len() - 1,
+                    if solution.len() > 2 { "steps" } else { "step" },
                     elapsed,
                 );
-                for step in solution.iter() {
+                let size: usize = puzzle.size.try_into().unwrap();
+                for (index, step) in solution.iter().enumerate() {
+                    println!("{}", "#".repeat((index % size) + 1));
                     print_map(puzzle.size, step);
                 }
             }

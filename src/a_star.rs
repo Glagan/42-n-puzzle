@@ -16,6 +16,25 @@ fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
     full_path
 }
 
+// fn best_current_node(set: &[Node], scores: &HashMap<Node, i32>) -> usize {
+//     let mut best_index = 0;
+//     let mut best_score = i32::MAX;
+
+//     for (index, node) in set.iter().enumerate() {
+//         let score = if scores.contains_key(node) {
+//             scores[node]
+//         } else {
+//             i32::MAX
+//         };
+//         if score < best_score {
+//             best_index = index;
+//             best_score = score;
+//         }
+//     }
+
+//     best_index
+// }
+
 fn set_best_position(set: &[Node], scores: &HashMap<Node, i32>, score: i32) -> Option<usize> {
     for (index, node) in set.iter().enumerate() {
         let node_score = if scores.contains_key(node) {
@@ -32,7 +51,7 @@ fn set_best_position(set: &[Node], scores: &HashMap<Node, i32>, score: i32) -> O
 }
 
 fn set_has_node(set: &[Node], value: &Node) -> bool {
-    set.iter().any(|in_opened| *in_opened == *value)
+    set.contains(value)
 }
 
 pub fn solve(
@@ -44,18 +63,21 @@ pub fn solve(
 
     // State
     let mut open_set: Vec<Node> = vec![puzzle.map.clone()];
-    // cameFrom
+    // cameFrom -- best previous path to a node
     let mut best_path_to_node: HashMap<Node, Node> = HashMap::new();
-    // gScore
-    let mut best_score_to_node: HashMap<Node, i32> = HashMap::new();
-    best_score_to_node.insert(puzzle.map.clone(), 0);
-    // fScore
-    let mut best_guess_to_node: HashMap<Node, i32> = HashMap::new();
-    best_guess_to_node.insert(puzzle.map.clone(), heuristic(&puzzle.map, goal));
+    // gScore -- cost of the best path to a node
+    let mut best_cost_to_node: HashMap<Node, i32> = HashMap::new();
+    best_cost_to_node.insert(puzzle.map.clone(), 0);
+    // fScore -- cost of the current best found path to a node
+    let mut total_cost_to_node: HashMap<Node, i32> = HashMap::new();
+    total_cost_to_node.insert(puzzle.map.clone(), heuristic(&puzzle.map, goal));
 
     // Iterate on each cells
     let mut it = 0;
     while !open_set.is_empty() {
+        // open_set is not sorted
+        // let best_index = best_current_node(&open_set, &total_cost_to_node);
+        // let current = open_set.remove(best_index);
         // open_set is sorted by best_guess_to_node and the first element is always the lowest
         let current = open_set.remove(0);
 
@@ -66,28 +88,35 @@ pub fn solve(
 
         for neighbor in neighbors(puzzle.size, &current).into_iter().flatten() {
             // println!("# checking {:#?}", neighbor);
-            let goal_distance_for_neighbor = best_score_to_node.get(&current).unwrap() + 1;
-            let neighbor_previous_score = best_score_to_node.get(&neighbor);
+            let next_move_cost = best_cost_to_node.get(&current).unwrap() + 1;
+            let neighbor_previous_cost = best_cost_to_node.get(&neighbor);
             // println!("# checking {:#?}", neighbor);
-            if neighbor_previous_score.is_none()
-                || goal_distance_for_neighbor < *neighbor_previous_score.unwrap()
+            if neighbor_previous_cost.is_none()
+                || next_move_cost < *(neighbor_previous_cost.unwrap())
             {
-                best_path_to_node
-                    .entry(neighbor.clone())
-                    .or_insert_with(|| current.clone());
-                best_score_to_node
-                    .entry(neighbor.clone())
-                    .or_insert(goal_distance_for_neighbor);
-                let neighbor_distance_to_goal =
-                    goal_distance_for_neighbor + heuristic(&neighbor, goal);
+                // Update each state hash maps
+                if !best_path_to_node.contains_key(&neighbor) {
+                    best_path_to_node.insert(neighbor.clone(), current.clone());
+                } else if best_path_to_node[&neighbor] != current {
+                    *best_path_to_node.get_mut(&neighbor).unwrap() = current.clone();
+                }
+                if !best_cost_to_node.contains_key(&neighbor) {
+                    best_cost_to_node.insert(neighbor.clone(), next_move_cost);
+                } else {
+                    *best_cost_to_node.get_mut(&neighbor).unwrap() = next_move_cost;
+                }
+                let neighbor_distance_to_goal = next_move_cost + heuristic(&neighbor, goal);
+                if !total_cost_to_node.contains_key(&neighbor) {
+                    total_cost_to_node.insert(neighbor.clone(), neighbor_distance_to_goal);
+                } else {
+                    *total_cost_to_node.get_mut(&neighbor).unwrap() = neighbor_distance_to_goal;
+                }
                 // println!("h(x) = {}", neighbor_distance_to_goal);
-                best_guess_to_node
-                    .entry(neighbor.clone())
-                    .or_insert(neighbor_distance_to_goal);
                 if !set_has_node(&open_set, &neighbor) {
+                    // open_set.push(neighbor.clone());
                     match set_best_position(
                         &open_set,
-                        &best_guess_to_node,
+                        &total_cost_to_node,
                         neighbor_distance_to_goal,
                     ) {
                         Some(index) => open_set.insert(index, neighbor.clone()),
@@ -99,7 +128,7 @@ pub fn solve(
 
         // println!("it {}", it);
         if it % 1000 == 0 {
-            // println!("{:#?}", best_score_to_node);
+            // println!("{:#?}", best_cost_to_node);
             println!("it #{} elapsed {:.2?}", it, now.elapsed());
         }
         it += 1;

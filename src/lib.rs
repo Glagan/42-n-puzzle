@@ -118,7 +118,6 @@ fn last_line() {
 }
 
 pub fn print_map(size: i32, map: &Node) {
-    println!("{}", size);
     let size: usize = size.try_into().unwrap();
     for (index, value) in map.iter().enumerate() {
         print!("{:3} ", value);
