@@ -17,12 +17,16 @@ fn main() {
             eprintln!("#> `{}`: {}", puzzle_path, err);
             process::exit(1);
         });
-        println!("{:#?}", puzzle);
+        // println!("{:#?}", puzzle);
         let goal = goal::generate(puzzle.size).unwrap_or_else(|err| {
             eprintln!("#> `{}`: {}", puzzle_path, err);
             process::exit(1);
         });
-        println!("Goal {:#?}", goal);
-        a_star::solve(&puzzle, &goal, heuristic::manhattan);
+        // println!("Goal {:#?}", goal);
+        let res = a_star::solve(&puzzle, &goal, heuristic::manhattan);
+        match res {
+            Ok(solution) => println!("#> Solution {:#?}", solution),
+            Err(_) => eprintln!("#> Puzzle has no solutions !"),
+        }
     }
 }
