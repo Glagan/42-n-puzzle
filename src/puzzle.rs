@@ -10,7 +10,7 @@ pub struct Puzzle {
 impl Puzzle {
     fn parse_line(line: &str) -> Result<Option<Vec<i32>>, String> {
         let mut line = line.trim();
-        if !line.is_empty() {
+        if line.is_empty() {
             return Ok(None);
         }
         // Remove comment
