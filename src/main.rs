@@ -52,7 +52,7 @@ fn main() {
                 );
                 let size: usize = puzzle.size.try_into().unwrap();
                 for (index, step) in solution.steps.iter().enumerate() {
-                    println!("{:3} {}", "#".repeat((index % size) + 1), index);
+                    println!("{:3} {}", index, "#".repeat((index % size) + 1));
                     print_map(puzzle.size, step);
                 }
             }
