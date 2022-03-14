@@ -34,13 +34,25 @@ fn main() {
             Ok(solution) => {
                 println!(
                     "#> Solution found ({:#?} {}) in {:.2?}",
-                    solution.len() - 1,
-                    if solution.len() > 2 { "steps" } else { "step" },
+                    solution.steps.len() - 1,
+                    if solution.steps.len() > 2 {
+                        "steps"
+                    } else {
+                        "step"
+                    },
                     elapsed,
                 );
+                println!(
+                    "#> Total number of states ever selected: {}",
+                    solution.total_used_states
+                );
+                println!(
+                    "#> Maximum number of states ever represented in memory: {}",
+                    solution.biggest_state
+                );
                 let size: usize = puzzle.size.try_into().unwrap();
-                for (index, step) in solution.iter().enumerate() {
-                    println!("{}", "#".repeat((index % size) + 1));
+                for (index, step) in solution.steps.iter().enumerate() {
+                    println!("{:3} {}", "#".repeat((index % size) + 1), index);
                     print_map(puzzle.size, step);
                 }
             }

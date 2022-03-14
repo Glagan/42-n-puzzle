@@ -3,6 +3,12 @@ use npuzzle::{neighbors, Node};
 use std::collections::HashMap;
 use std::time::Instant;
 
+pub struct Solution {
+    pub total_used_states: i32,
+    pub biggest_state: i32,
+    pub steps: Vec<Node>,
+}
+
 fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
     let mut full_path = vec![node.clone()];
 
@@ -58,8 +64,12 @@ pub fn solve(
     puzzle: &Puzzle,
     goal: &Node,
     heuristic: fn(&Node, &Node) -> i32,
-) -> Result<Vec<Node>, String> {
+) -> Result<Solution, String> {
     let now = Instant::now();
+
+    // Summary
+    let mut total_used_states = 0;
+    let mut biggest_state: i32 = 0;
 
     // State
     let mut open_set: Vec<Node> = vec![puzzle.map.clone()];
@@ -75,6 +85,11 @@ pub fn solve(
     // Iterate on each cells
     let mut it = 0;
     while !open_set.is_empty() {
+        total_used_states += 1;
+        if open_set.len() > biggest_state.try_into().unwrap() {
+            biggest_state = open_set.len().try_into().unwrap();
+        }
+
         // open_set is not sorted
         // let best_index = best_current_node(&open_set, &total_cost_to_node);
         // let current = open_set.remove(best_index);
@@ -83,7 +98,11 @@ pub fn solve(
 
         // Check if it's the goal
         if current == *goal {
-            return Ok(reconstruct_path(&best_path_to_node, &current));
+            return Ok(Solution {
+                total_used_states,
+                biggest_state,
+                steps: reconstruct_path(&best_path_to_node, &current),
+            });
         }
 
         for neighbor in neighbors(puzzle.size, &current).into_iter().flatten() {
