@@ -31,11 +31,16 @@ fn main() {
         let elapsed = now.elapsed();
         match res {
             // Ok(solution) => println!("#> Solution {:#?}", solution),
-            Ok(solution) => println!(
-                "#> Solution found ({:#?} steps) in {:.2?}",
-                solution.len(),
-                elapsed
-            ),
+            Ok(solution) => {
+                println!(
+                    "#> Solution found ({:#?} steps) in {:.2?}",
+                    solution.len(),
+                    elapsed,
+                );
+                for step in solution.iter() {
+                    print_map(puzzle.size, step);
+                }
+            }
             Err(_) => eprintln!("#> No solution found in {:.2?}", elapsed),
         }
     }
