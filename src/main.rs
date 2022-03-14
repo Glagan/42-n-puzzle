@@ -1,4 +1,7 @@
 use std::process;
+use std::time::Instant;
+
+use npuzzle::print_map;
 
 mod a_star;
 mod config;
@@ -17,16 +20,23 @@ fn main() {
             eprintln!("#> `{}`: {}", puzzle_path, err);
             process::exit(1);
         });
-        // println!("{:#?}", puzzle);
+        println!("{}", puzzle);
         let goal = goal::generate(puzzle.size).unwrap_or_else(|err| {
             eprintln!("#> `{}`: {}", puzzle_path, err);
             process::exit(1);
         });
-        // println!("Goal {:#?}", goal);
+        print_map(puzzle.size, &goal);
+        let now = Instant::now();
         let res = a_star::solve(&puzzle, &goal, heuristic::manhattan);
+        let elapsed = now.elapsed();
         match res {
-            Ok(solution) => println!("#> Solution {:#?}", solution),
-            Err(_) => eprintln!("#> Puzzle has no solutions !"),
+            // Ok(solution) => println!("#> Solution {:#?}", solution),
+            Ok(solution) => println!(
+                "#> Solution found ({:#?} steps) in {:.2?}",
+                solution.len(),
+                elapsed
+            ),
+            Err(_) => eprintln!("#> No solution found in {:.2?}", elapsed),
         }
     }
 }

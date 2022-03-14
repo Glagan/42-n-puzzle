@@ -1,3 +1,4 @@
+use core::fmt;
 use std::fs;
 use std::num::ParseIntError;
 
@@ -96,5 +97,20 @@ impl Puzzle {
         }
         let content = content.unwrap();
         Puzzle::parse_content(&content)
+    }
+}
+
+impl fmt::Display for Puzzle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        println!("{}", self.size);
+        let mut res = fmt::Result::Ok(());
+        let size: usize = self.size.try_into().unwrap();
+        for (index, value) in self.map.iter().enumerate() {
+            res = write!(f, "{:3} ", value);
+            if (index + 1) % size == 0 {
+                res = writeln!(f);
+            }
+        }
+        res
     }
 }

@@ -7,8 +7,18 @@ struct NodeWithScore {
     pub node: Node,
 }
 
-// TODO
-fn reconstruct_path() {}
+fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
+    let mut full_path = vec![node.clone()];
+
+    let mut current = node;
+    while paths.contains_key(current) {
+        current = &paths[current];
+        full_path.push(current.clone());
+    }
+
+    full_path.reverse();
+    full_path
+}
 
 // TODO: Priority queue
 fn best_current_node(set: &[NodeWithScore]) -> usize {
@@ -67,15 +77,14 @@ pub fn solve(
 
         // Check if it's the goal
         if current.node == *goal {
-            // reconstruct_path(best_path_to_node, current.node) // TODO
-            return Ok(Vec::new());
+            return Ok(reconstruct_path(&best_path_to_node, &current.node));
         }
 
         for neighbor in neighbors(puzzle.size, &current.node).into_iter().flatten() {
-            println!("# checking {:#?}", neighbor);
+            // println!("# checking {:#?}", neighbor);
             let goal_distance_for_neighbor = best_score_to_node.get(&current.node).unwrap() + 1;
             let neighbor_score = best_score_to_node.get(&neighbor);
-            println!("# checking {:#?}", neighbor);
+            // println!("# checking {:#?}", neighbor);
             if neighbor_score.is_none() || goal_distance_for_neighbor < *neighbor_score.unwrap() {
                 best_path_to_node.insert(neighbor.clone(), current.node.clone());
                 best_score_to_node

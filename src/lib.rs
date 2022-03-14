@@ -116,3 +116,14 @@ fn last_line() {
     assert_eq!(neighbors[2], None);
     assert_eq!(neighbors[3], Some(vec![1, 4, 2, 0, 5, 6, 3, 7, 8]));
 }
+
+pub fn print_map(size: i32, map: &Node) {
+    println!("{}", size);
+    let size: usize = size.try_into().unwrap();
+    for (index, value) in map.iter().enumerate() {
+        print!("{:3} ", value);
+        if (index + 1) % size == 0 {
+            println!();
+        }
+    }
+}
