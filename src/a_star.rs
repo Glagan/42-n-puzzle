@@ -4,17 +4,26 @@ use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 use std::time::Instant;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 struct NodeWithCost {
-    cost: i32,
+    cost: f64,
     node: Node,
+}
+
+impl Eq for NodeWithCost {}
+
+impl PartialEq for NodeWithCost {
+    fn eq(&self, other: &Self) -> bool {
+        self.cost == other.cost && self.node == other.node
+    }
 }
 
 impl Ord for NodeWithCost {
     fn cmp(&self, other: &Self) -> Ordering {
         other
             .cost
-            .cmp(&self.cost)
+            .partial_cmp(&self.cost)
+            .unwrap()
             .then_with(|| self.node.cmp(&other.node))
     }
 }
@@ -47,7 +56,7 @@ fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
 pub fn solve(
     puzzle: &Puzzle,
     goal: &Node,
-    heuristic: fn(&Node, &Node) -> i32,
+    heuristic: fn(&Node, &Node) -> f64,
 ) -> Result<Solution, String> {
     let now = Instant::now();
 
@@ -58,14 +67,14 @@ pub fn solve(
     // State
     let mut open_set = BinaryHeap::new();
     open_set.push(NodeWithCost {
-        cost: 0,
+        cost: 0.,
         node: puzzle.map.clone(),
     });
     // cameFrom -- best previous path to a node
     let mut best_path_to_node: HashMap<Node, Node> = HashMap::new();
     // gScore -- cost of the best path to a node
-    let mut best_cost_to_node: HashMap<Node, i32> = HashMap::new();
-    best_cost_to_node.insert(puzzle.map.clone(), 0);
+    let mut best_cost_to_node: HashMap<Node, f64> = HashMap::new();
+    best_cost_to_node.insert(puzzle.map.clone(), 0.);
 
     // Iterate on each cells
     while let Some(NodeWithCost {
@@ -89,7 +98,7 @@ pub fn solve(
 
         for neighbor in neighbors(puzzle.size, &current).into_iter().flatten() {
             // println!("# checking {:#?}", neighbor);
-            let next_move_cost = best_cost_to_node.get(&current).unwrap() + 1;
+            let next_move_cost = best_cost_to_node.get(&current).unwrap() + 1.;
             let neighbor_previous_cost = best_cost_to_node.get(&neighbor);
             // println!("# checking {:#?}", neighbor);
             if neighbor_previous_cost.is_none()
