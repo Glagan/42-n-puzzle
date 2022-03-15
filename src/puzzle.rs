@@ -1,11 +1,14 @@
+use crate::{goal, heuristic};
 use core::fmt;
+use npuzzle::Node;
 use std::fs;
 use std::num::ParseIntError;
 
-#[derive(Debug)]
 pub struct Puzzle {
     pub size: i32,
-    pub map: Vec<i32>,
+    pub map: Node,
+    pub goal: Node,
+    h: fn(&Node, &Node) -> f64,
 }
 
 impl Puzzle {
@@ -38,10 +41,11 @@ impl Puzzle {
         Ok(Some(clean_cols))
     }
 
-    fn parse_content(content: &str) -> Result<Puzzle, String> {
+    fn parse_content(content: &str) -> Result<(i32, Node), String> {
         let mut size: i32 = 0;
         let mut empty_col: bool = false;
-        let mut map: Vec<i32> = Vec::new();
+        let mut map: Node = Vec::new();
+
         // Parse each lines and check for errors
         for line in content.lines() {
             let parsed_line = Puzzle::parse_line(line)?;
@@ -78,6 +82,7 @@ impl Puzzle {
                 }
             }
         }
+
         // Check final size, in case of missing or extra lines
         let cell_count: i32 = map.len().try_into().unwrap();
         let expected_count = size * size;
@@ -87,7 +92,8 @@ impl Puzzle {
                 cell_count, expected_count
             ));
         }
-        Ok(Puzzle { size, map })
+
+        Ok((size, map))
     }
 
     pub fn new(path: &str) -> Result<Puzzle, String> {
@@ -95,8 +101,26 @@ impl Puzzle {
         if let Err(e) = content {
             return Err(format!("Failed to open or read puzzle file: {}", e));
         }
+
         let content = content.unwrap();
-        Puzzle::parse_content(&content)
+        let (size, map) = Puzzle::parse_content(&content)?;
+
+        let map_goal = goal::generate(size)?;
+        Ok(Puzzle {
+            size,
+            map,
+            goal: map_goal,
+            h: heuristic::manhattan,
+        })
+    }
+
+    pub fn heuristic(&self, x: &Node) -> f64 {
+        (self.h)(x, &self.goal)
+    }
+
+    #[allow(dead_code)]
+    pub fn set_heuristic(&mut self, h: fn(&Node, &Node) -> f64) {
+        self.h = h
     }
 }
 

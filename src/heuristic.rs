@@ -4,7 +4,9 @@ use npuzzle::Node;
 pub fn manhattan(node: &Node, goal: &Node) -> f64 {
     let mut sum = 0.;
     for i in node.iter().zip(goal) {
-        sum += (i.0 - i.1).abs() as f64;
+        if i.1 > &0 {
+            sum += (i.0 - i.1).abs() as f64;
+        }
     }
     sum
 }
@@ -27,7 +29,9 @@ fn manhattan_two() {
 pub fn euclidean_distance(node: &Node, goal: &Node) -> f64 {
     let mut sum = 0.;
     for i in node.iter().zip(goal) {
-        sum += ((i.0 - i.1) as f64).powf(2.);
+        if i.1 > &0 {
+            sum += ((i.0 - i.1) as f64).powf(2.);
+        }
     }
     sum.sqrt()
 }

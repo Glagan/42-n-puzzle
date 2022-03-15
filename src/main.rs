@@ -21,13 +21,10 @@ fn main() {
             process::exit(1);
         });
         println!("{}", puzzle);
-        let goal = goal::generate(puzzle.size).unwrap_or_else(|err| {
-            eprintln!("#> `{}`: {}", puzzle_path, err);
-            process::exit(1);
-        });
-        print_map(puzzle.size, &goal);
+        print_map(puzzle.size, &puzzle.goal);
+
         let now = Instant::now();
-        let res = a_star::solve(&puzzle, &goal, heuristic::manhattan);
+        let res = a_star::solve(&puzzle);
         let elapsed = now.elapsed();
         match res {
             // Ok(solution) => println!("#> Solution {:#?}", solution),
