@@ -9,17 +9,38 @@ struct NodeWithCost<'a> {
     depth: i32,
     cost: f64,
     node: Node,
-    parent: Option<Box<&'a NodeWithCost<'a>>>,
+    parent: Option<&'a NodeWithCost<'a>>,
+    _neighbors: Option<Vec<NodeWithCost<'a>>>,
 }
 
-impl NodeWithCost<'_> {
+impl<'a> NodeWithCost<'a> {
     pub fn start(puzzle: &Puzzle) -> NodeWithCost {
         NodeWithCost {
             depth: 0,
             node: puzzle.map.clone(),
             cost: puzzle.heuristic(&puzzle.map),
             parent: None,
+            _neighbors: None,
         }
+    }
+
+    pub fn neighbors(&'a mut self, puzzle: &Puzzle) -> Vec<NodeWithCost<'a>> {
+        if self._neighbors.is_none() {
+            self._neighbors = Some(
+                neighbors(puzzle.size, &self.node)
+                    .into_iter()
+                    .flatten()
+                    .map(|neighbor| NodeWithCost {
+                        depth: self.depth + 1,
+                        cost: puzzle.heuristic(&neighbor),
+                        node: neighbor,
+                        parent: Some(self),
+                        _neighbors: None,
+                    })
+                    .collect(),
+            );
+        }
+        self._neighbors.unwrap()
     }
 }
 
@@ -69,10 +90,11 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
     let mut total_used_states = 0;
     let mut biggest_state: i32 = 0;
 
+    // Keep reference to the whole graph and only borrow in other structs
+    let mut graph = NodeWithCost::start(puzzle);
     // State
-    let mut graph: Vec<NodeWithCost> = vec![NodeWithCost::start(puzzle)];
-    let mut open_set = BinaryHeap::new();
-    open_set.push(graph.get(0).unwrap());
+    let mut open_set: BinaryHeap<*mut NodeWithCost> = BinaryHeap::new();
+    open_set.push(&mut graph);
 
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
@@ -82,7 +104,7 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
         }
 
         // Check if it's the goal
-        if current.node == puzzle.goal {
+        if (*current).node == puzzle.goal {
             return Ok(Solution {
                 total_used_states,
                 biggest_state,
@@ -90,15 +112,13 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
             });
         }
 
-        for neighbor in neighbors(puzzle.size, &current.node).into_iter().flatten() {
-            let depth = current.depth + 1;
-            graph.push(NodeWithCost {
-                depth,
-                cost: depth as f64 + puzzle.heuristic(&neighbor),
-                node: neighbor,
-                parent: Some(Box::new(current)),
-            });
-            // open_set.push(&neighbor_node);
+        // If the current node neighbors are not generated, they were never explored
+        if current._neighbors.is_none() {
+            println!("# exploring new neighbors");
+            // Just add all neighbors to the open_set and it will use them if they have a good cost
+            for neighbor in &mut current.neighbors(puzzle) {
+                open_set.push(Box::new(neighbor));
+            }
         }
 
         // println!("it {}", it);
