@@ -83,12 +83,9 @@ pub fn solve(
     let mut total_used_states = 0;
     let mut biggest_state: usize = 1; // 1 is the initial state
 
-    // Keep reference to the whole graph and only borrow in other structs
-    let graph = NodeWithCost::start(puzzle);
-    // let mut nodes: Vec<Rc<NodeWithCost>> = Vec::new();
     // State
     let mut open_set: BinaryHeap<Rc<RefCell<NodeWithCost>>> = BinaryHeap::new();
-    open_set.push(Rc::new(RefCell::new(graph)));
+    open_set.push(Rc::new(RefCell::new(NodeWithCost::start(puzzle))));
 
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
