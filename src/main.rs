@@ -14,6 +14,8 @@ fn heuristic_by_name(name: &str) -> Option<fn(&Node, &Node) -> f64> {
         return Some(heuristic::manhattan);
     } else if name == "euclidean" {
         return Some(heuristic::euclidean_distance);
+    } else if name == "hamming" {
+        return Some(heuristic::hamming);
     }
     None
 }
