@@ -16,10 +16,11 @@ fn main() {
     });
     for puzzle_path in config.files {
         println!("# Puzzle {}", puzzle_path);
-        let puzzle = puzzle::Puzzle::new(&puzzle_path).unwrap_or_else(|err| {
+        let mut puzzle = puzzle::Puzzle::new(&puzzle_path).unwrap_or_else(|err| {
             eprintln!("#> `{}`: {}", puzzle_path, err);
             process::exit(1);
         });
+        puzzle.set_heuristic(heuristic::manhattan);
         println!("{}", puzzle);
         print_map(puzzle.size, &puzzle.goal);
 

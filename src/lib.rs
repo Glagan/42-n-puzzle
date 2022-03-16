@@ -117,6 +117,16 @@ fn last_line() {
     assert_eq!(neighbors[3], Some(vec![1, 4, 2, 0, 5, 6, 3, 7, 8]));
 }
 
+#[test]
+fn last_line_first_column() {
+    let source = vec![6, 7, 5, 4, 1, 8, 0, 2, 3];
+    let neighbors = neighbors(3, &source);
+    assert_eq!(neighbors[0], None);
+    assert_eq!(neighbors[1], Some(vec![6, 7, 5, 4, 1, 8, 2, 0, 3]));
+    assert_eq!(neighbors[2], None);
+    assert_eq!(neighbors[3], Some(vec![6, 7, 5, 0, 1, 8, 4, 2, 3]));
+}
+
 pub fn print_map(size: i32, map: &Node) {
     let size: usize = size.try_into().unwrap();
     for (index, value) in map.iter().enumerate() {
