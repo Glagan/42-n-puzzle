@@ -1,6 +1,6 @@
 use crate::{goal, heuristic};
 use core::fmt;
-use npuzzle::Node;
+use npuzzle::{neighbors, Node};
 use std::fs;
 use std::num::ParseIntError;
 
@@ -114,8 +114,12 @@ impl Puzzle {
         })
     }
 
-    pub fn heuristic(&self, x: &Node) -> f64 {
-        (self.h)(x, &self.goal)
+    pub fn neighbors(&self, node: &Node) -> [Option<Node>; 4] {
+        neighbors(self.size, node)
+    }
+
+    pub fn heuristic(&self, node: &Node) -> f64 {
+        (self.h)(node, &self.goal)
     }
 
     #[allow(dead_code)]

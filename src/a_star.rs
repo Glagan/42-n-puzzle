@@ -1,43 +1,47 @@
 use crate::puzzle::Puzzle;
-use npuzzle::{neighbors, Node};
+use npuzzle::Node;
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
+use std::rc::Rc;
 use std::time::Instant;
 
 #[derive(Clone)]
-struct NodeWithCost<'a> {
+struct NodeWithCost {
     depth: i32,
     cost: f64,
     node: Node,
-    parent: Option<Box<&'a NodeWithCost<'a>>>,
+    parent: Option<Rc<RefCell<NodeWithCost>>>,
+    explored: bool,
 }
 
-impl NodeWithCost<'_> {
+impl NodeWithCost {
     pub fn start(puzzle: &Puzzle) -> NodeWithCost {
         NodeWithCost {
             depth: 0,
             node: puzzle.map.clone(),
             cost: puzzle.heuristic(&puzzle.map),
             parent: None,
+            explored: false,
         }
     }
 }
 
-impl Eq for NodeWithCost<'_> {}
+impl Eq for NodeWithCost {}
 
-impl PartialEq for NodeWithCost<'_> {
+impl PartialEq for NodeWithCost {
     fn eq(&self, other: &Self) -> bool {
         self.cost == other.cost
     }
 }
 
-impl Ord for NodeWithCost<'_> {
+impl Ord for NodeWithCost {
     fn cmp(&self, other: &Self) -> Ordering {
         other.cost.partial_cmp(&self.cost).unwrap()
     }
 }
 
-impl PartialOrd for NodeWithCost<'_> {
+impl PartialOrd for NodeWithCost {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -49,13 +53,14 @@ pub struct Solution {
     pub steps: Vec<Node>,
 }
 
-fn construct_solution(node: &NodeWithCost) -> Vec<Node> {
-    let mut full_path = vec![node.node.clone()];
+fn construct_solution(node: Rc<RefCell<NodeWithCost>>) -> Vec<Node> {
+    let mut full_path = vec![];
 
-    let mut current = node;
-    while let Some(parent) = &current.parent {
-        current = parent;
-        full_path.push(current.node.clone());
+    let mut current = Some(node);
+    while let Some(node) = current {
+        let borrowed = node.borrow();
+        full_path.push(borrowed.node.clone());
+        current = borrowed.parent.as_ref().map(Rc::clone);
     }
 
     full_path.reverse();
@@ -67,12 +72,14 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
 
     // Summary
     let mut total_used_states = 0;
-    let mut biggest_state: i32 = 0;
+    let mut biggest_state: i32 = 1; // 1 is the initial state
 
+    // Keep reference to the whole graph and only borrow in other structs
+    let graph = NodeWithCost::start(puzzle);
+    // let mut nodes: Vec<Rc<NodeWithCost>> = Vec::new();
     // State
-    let mut graph: Vec<NodeWithCost> = vec![NodeWithCost::start(puzzle)];
-    let mut open_set = BinaryHeap::new();
-    open_set.push(graph.get(0).unwrap());
+    let mut open_set: BinaryHeap<Rc<RefCell<NodeWithCost>>> = BinaryHeap::new();
+    open_set.push(Rc::new(RefCell::new(graph)));
 
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
@@ -82,23 +89,36 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
         }
 
         // Check if it's the goal
-        if current.node == puzzle.goal {
+        if current.borrow().node == puzzle.goal {
             return Ok(Solution {
                 total_used_states,
                 biggest_state,
-                steps: construct_solution(&current),
+                steps: construct_solution(current),
             });
         }
 
-        for neighbor in neighbors(puzzle.size, &current.node).into_iter().flatten() {
-            let depth = current.depth + 1;
-            graph.push(NodeWithCost {
-                depth,
-                cost: depth as f64 + puzzle.heuristic(&neighbor),
-                node: neighbor,
-                parent: Some(Box::new(current)),
-            });
-            // open_set.push(&neighbor_node);
+        // If the current node neighbors are not generated, they were never explored
+        if !current.borrow().explored {
+            current.borrow_mut().explored = true;
+            let neighbors: Vec<Rc<RefCell<NodeWithCost>>> = puzzle
+                .neighbors(&current.borrow().node)
+                .into_iter()
+                .flatten()
+                .map(|neighbor| {
+                    let depth = current.borrow().depth + 1;
+                    Rc::new(RefCell::new(NodeWithCost {
+                        depth,
+                        cost: depth as f64 + puzzle.heuristic(&neighbor),
+                        node: neighbor,
+                        parent: Some(Rc::clone(&current)),
+                        explored: false,
+                    }))
+                })
+                .collect();
+            // Just add all neighbors to the open_set and it will use them if they have a good cost in the priority queue
+            for neighbor in neighbors {
+                open_set.push(Rc::clone(&neighbor))
+            }
         }
 
         // println!("it {}", it);
