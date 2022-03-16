@@ -37,13 +37,13 @@ impl PartialEq for NodeWithCost {
 
 impl Ord for NodeWithCost {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.cost.partial_cmp(&self.cost).unwrap()
+        other.cost.partial_cmp(&self.cost).unwrap().reverse()
     }
 }
 
 impl PartialOrd for NodeWithCost {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        Some(self.cost.partial_cmp(&other.cost).unwrap().reverse())
     }
 }
 
@@ -122,7 +122,7 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
         }
 
         // println!("it {}", it);
-        if total_used_states % 1000 == 0 {
+        if total_used_states % 10000 == 0 {
             // println!("{:#?}", best_cost_to_node);
             println!(
                 "# Total number of states ever selected: {} in {:.2?}",
