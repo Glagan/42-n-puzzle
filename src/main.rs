@@ -38,12 +38,23 @@ fn main() {
     ]
     .contains(&config.solution_type)
     {
-        eprintln!("Unknown solution type : {}", config.solution_type);
+        eprintln!("Unknown solution type: {}", config.solution_type);
+        process::exit(1);
+    }
+    if ![
+        String::from("normal"),
+        String::from("greedy"),
+        String::from("uniform"),
+    ]
+    .contains(&config.mode)
+    {
+        eprintln!("Unknown mode: {}", config.mode);
         process::exit(1);
     }
     println!("###");
     println!("Using heuristic: {}", config.heuristic_name);
     println!("Solution type:   {}", config.solution_type);
+    println!("Mode:            {}", config.mode);
     println!("###");
 
     //  Solve each puzzles
@@ -59,7 +70,7 @@ fn main() {
         print_map(puzzle.size, &puzzle.goal);
 
         let now = Instant::now();
-        let res = a_star::solve(&puzzle);
+        let res = a_star::solve(&puzzle, &config.mode);
         let elapsed = now.elapsed();
         match res {
             // Ok(solution) => println!("#> Solution {:#?}", solution),

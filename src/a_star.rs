@@ -67,8 +67,13 @@ fn construct_solution(node: Rc<RefCell<NodeWithCost>>) -> Vec<Node> {
     full_path
 }
 
-pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
+pub fn solve(puzzle: &Puzzle, mode: &str) -> Result<Solution, String> {
     let now = Instant::now();
+    let mode = match mode {
+        "greedy" => 1,
+        "uniform" => 2,
+        _ => 0,
+    };
 
     // Summary
     let mut total_used_states = 0;
@@ -105,7 +110,11 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
                     let depth = current.borrow().depth + 1;
                     Rc::new(RefCell::new(NodeWithCost {
                         depth,
-                        cost: depth as f64 + puzzle.heuristic(&neighbor),
+                        cost: match mode {
+                            0 => depth as f64 + puzzle.heuristic(&neighbor),
+                            1 => puzzle.heuristic(&neighbor), // Ignore depth
+                            _ => depth as f64,                // Ignore heuristic
+                        },
                         node: neighbor,
                         parent: Some(Rc::clone(&current)),
                         explored: false,

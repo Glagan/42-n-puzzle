@@ -4,6 +4,7 @@ use std::env;
 pub struct Config {
     pub heuristic_name: String,
     pub solution_type: String,
+    pub mode: String,
     pub files: Vec<String>,
 }
 
@@ -18,6 +19,7 @@ impl Config {
         let mut config = Config {
             heuristic_name: "manhattan".to_string(),
             solution_type: "snail".to_string(),
+            mode: "normal".to_string(),
             files: Vec::new(),
         };
         let mut found_first_puzzle = false;
@@ -29,6 +31,8 @@ impl Config {
                         config.heuristic_name = value.to_string();
                     } else if option_name == "--solution-type" {
                         config.solution_type = value.to_string();
+                    } else if option_name == "--mode" {
+                        config.mode = value.to_string();
                     }
                 } else {
                     return Err(format!("Malformed argument {}", arg));
