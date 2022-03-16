@@ -49,7 +49,7 @@ impl PartialOrd for NodeWithCost {
 
 pub struct Solution {
     pub total_used_states: i32,
-    pub biggest_state: i32,
+    pub biggest_state: usize,
     pub steps: Vec<Node>,
 }
 
@@ -72,7 +72,7 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
 
     // Summary
     let mut total_used_states = 0;
-    let mut biggest_state: i32 = 1; // 1 is the initial state
+    let mut biggest_state: usize = 1; // 1 is the initial state
 
     // Keep reference to the whole graph and only borrow in other structs
     let graph = NodeWithCost::start(puzzle);
@@ -84,9 +84,6 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
         total_used_states += 1;
-        if open_set.len() > biggest_state.try_into().unwrap() {
-            biggest_state = open_set.len().try_into().unwrap();
-        }
 
         // Check if it's the goal
         if current.borrow().node == puzzle.goal {
@@ -118,6 +115,9 @@ pub fn solve(puzzle: &Puzzle) -> Result<Solution, String> {
             // Just add all neighbors to the open_set and it will use them if they have a good cost in the priority queue
             for neighbor in neighbors {
                 open_set.push(Rc::clone(&neighbor))
+            }
+            if open_set.len() > biggest_state {
+                biggest_state = open_set.len() + 1;
             }
         }
 

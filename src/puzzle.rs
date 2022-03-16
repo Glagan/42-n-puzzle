@@ -96,7 +96,7 @@ impl Puzzle {
         Ok((size, map))
     }
 
-    pub fn new(path: &str) -> Result<Puzzle, String> {
+    pub fn new(path: &str, solution_type: &str) -> Result<Puzzle, String> {
         let content = fs::read_to_string(path);
         if let Err(e) = content {
             return Err(format!("Failed to open or read puzzle file: {}", e));
@@ -105,7 +105,7 @@ impl Puzzle {
         let content = content.unwrap();
         let (size, map) = Puzzle::parse_content(&content)?;
 
-        let map_goal = goal::generate(size)?;
+        let map_goal = goal::generate(size, solution_type)?;
         Ok(Puzzle {
             size,
             map,

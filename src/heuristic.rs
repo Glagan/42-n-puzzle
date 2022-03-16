@@ -1,6 +1,5 @@
 use npuzzle::Node;
 
-#[allow(dead_code)]
 pub fn manhattan(node: &Node, goal: &Node) -> f64 {
     let mut sum = 0.;
     for i in node.iter().zip(goal) {
@@ -25,7 +24,6 @@ fn manhattan_two() {
     assert_eq!(manhattan(&left, &right), 13.)
 }
 
-#[allow(dead_code)]
 pub fn euclidean_distance(node: &Node, goal: &Node) -> f64 {
     let mut sum = 0.;
     for i in node.iter().zip(goal) {
