@@ -60,17 +60,16 @@ fn main() {
     //  Solve each puzzles
     for puzzle_path in &config.files {
         println!("# Puzzle {}", puzzle_path);
-        let mut puzzle =
+        let puzzle =
             puzzle::Puzzle::new(puzzle_path, &config.solution_type).unwrap_or_else(|err| {
                 eprintln!("#> `{}`: {}", puzzle_path, err);
                 process::exit(1);
             });
-        puzzle.set_heuristic(heuristic_fn);
         println!("{}", puzzle);
         print_map(puzzle.size, &puzzle.goal);
 
         let now = Instant::now();
-        let res = a_star::solve(&puzzle, &config.mode);
+        let res = a_star::solve(&puzzle, &config.mode, heuristic_fn);
         let elapsed = now.elapsed();
         match res {
             // Ok(solution) => println!("#> Solution {:#?}", solution),

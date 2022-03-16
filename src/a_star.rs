@@ -20,7 +20,7 @@ impl NodeWithCost {
         NodeWithCost {
             depth: 0,
             node: puzzle.map.clone(),
-            cost: puzzle.heuristic(&puzzle.map),
+            cost: 0.,
             parent: None,
             explored: false,
         }
@@ -67,7 +67,11 @@ fn construct_solution(node: Rc<RefCell<NodeWithCost>>) -> Vec<Node> {
     full_path
 }
 
-pub fn solve(puzzle: &Puzzle, mode: &str) -> Result<Solution, String> {
+pub fn solve(
+    puzzle: &Puzzle,
+    mode: &str,
+    heuristic: fn(&Node, &Node) -> f64,
+) -> Result<Solution, String> {
     let now = Instant::now();
     let mode = match mode {
         "greedy" => 1,
@@ -111,9 +115,9 @@ pub fn solve(puzzle: &Puzzle, mode: &str) -> Result<Solution, String> {
                     Rc::new(RefCell::new(NodeWithCost {
                         depth,
                         cost: match mode {
-                            0 => depth as f64 + puzzle.heuristic(&neighbor),
-                            1 => puzzle.heuristic(&neighbor), // Ignore depth
-                            _ => depth as f64,                // Ignore heuristic
+                            0 => depth as f64 + heuristic(&neighbor, &puzzle.goal),
+                            1 => heuristic(&neighbor, &puzzle.goal), // Ignore depth
+                            _ => depth as f64,                       // Ignore heuristic
                         },
                         node: neighbor,
                         parent: Some(Rc::clone(&current)),

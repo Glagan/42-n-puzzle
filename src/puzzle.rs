@@ -1,4 +1,4 @@
-use crate::{goal, heuristic};
+use crate::goal;
 use core::fmt;
 use npuzzle::{neighbors, Node};
 use std::fs;
@@ -8,7 +8,6 @@ pub struct Puzzle {
     pub size: i32,
     pub map: Node,
     pub goal: Node,
-    h: fn(&Node, &Node) -> f64,
 }
 
 impl Puzzle {
@@ -110,21 +109,11 @@ impl Puzzle {
             size,
             map,
             goal: map_goal,
-            h: heuristic::manhattan,
         })
     }
 
     pub fn neighbors(&self, node: &Node) -> [Option<Node>; 4] {
         neighbors(self.size, node)
-    }
-
-    pub fn heuristic(&self, node: &Node) -> f64 {
-        (self.h)(node, &self.goal)
-    }
-
-    #[allow(dead_code)]
-    pub fn set_heuristic(&mut self, h: fn(&Node, &Node) -> f64) {
-        self.h = h
     }
 }
 
