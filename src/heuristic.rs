@@ -3,7 +3,7 @@ use npuzzle::Node;
 pub fn manhattan(node: &Node, goal: &Node) -> f64 {
     node.iter()
         .zip(goal)
-        .map(|(x, y)| (x - y).abs() as f64)
+        .map(|(x, y)| if *x > 0 { (x - y).abs() as f64 } else { 0. })
         .sum::<f64>()
 }
 
@@ -11,7 +11,7 @@ pub fn manhattan(node: &Node, goal: &Node) -> f64 {
 fn manhattan_one() {
     let left = vec![1, 2, 3, 4, 5, 6, 7, 8, 0];
     let right = vec![1, 2, 3, 4, 5, 6, 7, 0, 8];
-    assert_eq!(manhattan(&left, &right), 16.)
+    assert_eq!(manhattan(&left, &right), 8.)
 }
 
 #[test]
@@ -24,7 +24,13 @@ fn manhattan_two() {
 pub fn euclidean_distance(node: &Node, goal: &Node) -> f64 {
     node.iter()
         .zip(goal)
-        .map(|(x, y)| ((x - y) as f64).powf(2.))
+        .map(|(x, y)| {
+            if *x > 0 {
+                ((x - y) as f64).powf(2.)
+            } else {
+                0.
+            }
+        })
         .sum::<f64>()
         .sqrt()
 }
@@ -33,7 +39,7 @@ pub fn euclidean_distance(node: &Node, goal: &Node) -> f64 {
 fn euclidean_distance_one() {
     let left = vec![1, 2, 3, 4, 5, 6, 7, 8, 0];
     let right = vec![1, 2, 3, 4, 5, 6, 7, 0, 8];
-    assert_eq!(euclidean_distance(&left, &right), 11.313708498984761)
+    assert_eq!(euclidean_distance(&left, &right), 8.)
 }
 
 #[test]
@@ -46,7 +52,7 @@ fn euclidean_distance_two() {
 pub fn hamming(node: &Node, goal: &Node) -> f64 {
     node.iter()
         .zip(goal)
-        .map(|(x, y)| if x != y { 1. } else { 0. })
+        .map(|(x, y)| if *x > 0 && x != y { 1. } else { 0. })
         .sum()
 }
 
@@ -54,7 +60,7 @@ pub fn hamming(node: &Node, goal: &Node) -> f64 {
 fn hamming_one() {
     let left = vec![1, 2, 3, 4, 5, 6, 7, 8, 0];
     let right = vec![1, 2, 3, 4, 5, 6, 7, 0, 8];
-    assert_eq!(hamming(&left, &right), 2.)
+    assert_eq!(hamming(&left, &right), 1.)
 }
 
 #[test]
