@@ -1,5 +1,22 @@
 # n-puzzle
 
+## Usage
+
+```bash
+cargo run -- {options} {puzzle_path...}
+Options:
+--heuristic     linear-conflict (default, best)
+                manhattan
+                euclidean
+                hamming (worst)
+--solution-type snail (default)
+                first
+                last
+--mode          normal (default)
+                greedy (skip g(n))
+                uniform (skip h(n))
+```
+
 ## Resources
 
 * Rust Book
@@ -9,5 +26,4 @@
 * A*
     * https://en.wikipedia.org/wiki/A*_search_algorithm
     * https://algorithmsinsight.wordpress.com/graph-theory-2/a-star-in-general/
-* Manhattan distance with a list
-    * https://stackoverflow.com/a/39759853
+    * https://www.aaai.org/Papers/AAAI/1996/AAAI96-178.pdf
