@@ -9,7 +9,7 @@ mod goal;
 mod heuristic;
 mod puzzle;
 
-fn heuristic_by_name(name: &str) -> Option<fn(&Node, &Node) -> f64> {
+fn heuristic_by_name(name: &str) -> Option<fn(i32, &Node, &Node) -> f64> {
     if name == "manhattan" {
         return Some(heuristic::manhattan);
     } else if name == "euclidean" {

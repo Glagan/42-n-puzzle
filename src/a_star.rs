@@ -70,7 +70,7 @@ fn construct_solution(node: Rc<RefCell<NodeWithCost>>) -> Vec<Node> {
 pub fn solve(
     puzzle: &Puzzle,
     mode: &str,
-    heuristic: fn(&Node, &Node) -> f64,
+    heuristic: fn(i32, &Node, &Node) -> f64,
 ) -> Result<Solution, String> {
     let now = Instant::now();
     let mode = match mode {
@@ -112,9 +112,9 @@ pub fn solve(
                     Rc::new(RefCell::new(NodeWithCost {
                         depth,
                         cost: match mode {
-                            0 => depth as f64 + heuristic(&neighbor, &puzzle.goal),
-                            1 => heuristic(&neighbor, &puzzle.goal), // Ignore depth
-                            _ => depth as f64,                       // Ignore heuristic
+                            0 => depth as f64 + heuristic(puzzle.size, &neighbor, &puzzle.goal),
+                            1 => heuristic(puzzle.size, &neighbor, &puzzle.goal), // Ignore depth
+                            _ => depth as f64, // Ignore heuristic
                         },
                         node: neighbor,
                         parent: Some(Rc::clone(&current)),
