@@ -115,6 +115,31 @@ impl Puzzle {
     pub fn neighbors(&self, node: &Node) -> [Option<Node>; 4] {
         neighbors(self.size, node)
     }
+
+    pub fn is_solvable(&self) -> bool {
+        let size: usize = self.size.try_into().unwrap();
+        let empty_row: usize = size - (self.map.iter().position(|&v| v == 0).unwrap() % size) - 1;
+        let mut parity = 0;
+        // Count number of
+        for (index, &i) in self.map.iter().enumerate() {
+            for &j in self.map.iter().skip(index) {
+                if i > j && j != 0 {
+                    parity += 1;
+                }
+            }
+        }
+        // Even puzzle size
+        if size % 2 == 0 {
+            // Row with empty cell is even
+            if empty_row % 2 == 0 {
+                parity % 2 == 0
+            } else {
+                parity % 2 != 0
+            }
+        } else {
+            parity % 2 == 0
+        }
+    }
 }
 
 impl fmt::Display for Puzzle {

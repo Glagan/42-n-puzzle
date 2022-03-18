@@ -46,6 +46,11 @@ fn main() {
         println!("{}", puzzle);
         print_map(puzzle.size, &puzzle.goal);
 
+        if !puzzle.is_solvable() {
+            println!("#> Puzzle is unsolvable for this solution");
+            continue;
+        }
+
         let now = Instant::now();
         let res = a_star::solve(&puzzle, &config.mode, heuristic_fn);
         let elapsed = now.elapsed();

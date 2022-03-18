@@ -132,7 +132,7 @@ pub fn solve(
         }
 
         // println!("it {}", it);
-        if total_used_states % 10000 == 0 {
+        if total_used_states % 100000 == 0 {
             // println!("{:#?}", best_cost_to_node);
             println!(
                 "# Total number of states ever selected: {} in {:.2?}",
