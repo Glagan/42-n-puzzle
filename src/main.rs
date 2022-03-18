@@ -31,31 +31,7 @@ fn main() {
         eprintln!("Unknown heuristic: {}", config.heuristic_name);
         process::exit(1);
     });
-    if ![
-        String::from("snail"),
-        String::from("first"),
-        String::from("last"),
-    ]
-    .contains(&config.solution_type)
-    {
-        eprintln!("Unknown solution type: {}", config.solution_type);
-        process::exit(1);
-    }
-    if ![
-        String::from("normal"),
-        String::from("greedy"),
-        String::from("uniform"),
-    ]
-    .contains(&config.mode)
-    {
-        eprintln!("Unknown mode: {}", config.mode);
-        process::exit(1);
-    }
-    println!("###");
-    println!("Using heuristic: {}", config.heuristic_name);
-    println!("Solution type:   {}", config.solution_type);
-    println!("Mode:            {}", config.mode);
-    println!("###");
+    config.check_and_explain();
 
     //  Solve each puzzles
     for puzzle_path in &config.files {

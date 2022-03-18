@@ -1,4 +1,5 @@
 use std::env;
+use std::process;
 
 #[derive(Debug)]
 pub struct Config {
@@ -51,5 +52,33 @@ impl Config {
         }
 
         Ok(config)
+    }
+
+    pub fn check_and_explain(&self) {
+        if ![
+            String::from("snail"),
+            String::from("first"),
+            String::from("last"),
+        ]
+        .contains(&self.solution_type)
+        {
+            eprintln!("Unknown solution type: {}", self.solution_type);
+            process::exit(1);
+        }
+        if ![
+            String::from("normal"),
+            String::from("greedy"),
+            String::from("uniform"),
+        ]
+        .contains(&self.mode)
+        {
+            eprintln!("Unknown mode: {}", self.mode);
+            process::exit(1);
+        }
+        println!("###");
+        println!("Using heuristic: {}", self.heuristic_name);
+        println!("Solution type:   {}", self.solution_type);
+        println!("Mode:            {}", self.mode);
+        println!("###");
     }
 }
