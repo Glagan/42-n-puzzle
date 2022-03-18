@@ -1,6 +1,6 @@
 use crate::goal;
 use core::fmt;
-use npuzzle::{neighbors, Node};
+use npuzzle::{neighbors, Node, SnailIterator};
 use std::fs;
 use std::num::ParseIntError;
 
@@ -116,11 +116,27 @@ impl Puzzle {
         neighbors(self.size, node)
     }
 
-    pub fn is_solvable(&self) -> bool {
+    // Count parity in "snail" order
+    fn snail_solvability_info(&self) -> (usize, i32) {
         let size: usize = self.size.try_into().unwrap();
-        let empty_row: usize = size - (self.map.iter().position(|&v| v == 0).unwrap() % size) - 1;
+        let empty_row: usize = (self.map.iter().position(|&v| v == 0).unwrap() / size)
+            + (size as f64 / 2.).ceil() as usize;
         let mut parity = 0;
-        // Count number of
+        let mut iterator = SnailIterator::new(self.size);
+        // Iterate for each cells to add each numbers in "snail" order
+        for (index, value) in iterator.by_ref() {
+            // Check parity
+            if self.map[index] > value {
+                parity += 1;
+            }
+        }
+        (empty_row, parity)
+    }
+
+    fn first_solvability_info(&self) -> (usize, i32) {
+        let size: usize = self.size.try_into().unwrap();
+        let empty_row: usize = (self.map.iter().position(|&v| v == 0).unwrap() / size) + 1;
+        let mut parity = 0;
         for (index, &i) in self.map.iter().enumerate() {
             for &j in self.map.iter().skip(index) {
                 if i > j && j != 0 {
@@ -128,13 +144,38 @@ impl Puzzle {
                 }
             }
         }
+        (empty_row, parity)
+    }
+
+    fn last_solvability_info(&self) -> (usize, i32) {
+        let size: usize = self.size.try_into().unwrap();
+        let empty_row: usize = size - (self.map.iter().position(|&v| v == 0).unwrap() / size);
+        let mut parity = 0;
+        for (index, &i) in self.map.iter().enumerate() {
+            for &j in self.map.iter().skip(index) {
+                if i < j && j != 0 {
+                    parity += 1;
+                }
+            }
+        }
+        (empty_row, parity)
+    }
+
+    pub fn is_solvable(&self, method: &str) -> bool {
+        let size: usize = self.size.try_into().unwrap();
+        // Count number of movements and the empty row depending on each solutions
+        let (empty_row, parity) = match method {
+            "first" => self.first_solvability_info(),
+            "last" => self.last_solvability_info(),
+            _ => self.snail_solvability_info(),
+        };
         // Even puzzle size
         if size % 2 == 0 {
             // Row with empty cell is even
             if empty_row % 2 == 0 {
-                parity % 2 == 0
-            } else {
                 parity % 2 != 0
+            } else {
+                parity % 2 == 0
             }
         } else {
             parity % 2 == 0
@@ -144,11 +185,14 @@ impl Puzzle {
 
 impl fmt::Display for Puzzle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        println!("{}", self.size);
         let mut res = fmt::Result::Ok(());
         let size: usize = self.size.try_into().unwrap();
         for (index, value) in self.map.iter().enumerate() {
-            res = write!(f, "{:3} ", value);
+            if *value == 0 {
+                res = write!(f, "    ");
+            } else {
+                res = write!(f, "{:3} ", value);
+            }
             if (index + 1) % size == 0 {
                 res = writeln!(f);
             }
