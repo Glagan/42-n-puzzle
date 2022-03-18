@@ -12,9 +12,6 @@ pub struct Config {
 impl Config {
     pub fn new() -> Result<Config, String> {
         let args: Vec<String> = env::args().skip(1).collect();
-        if args.is_empty() {
-            return Err("You must add at least one argument as the puzzle to solve".to_string());
-        }
 
         // Parse each arguments as option or puzzle path
         let mut config = Config {
@@ -44,11 +41,6 @@ impl Config {
             if found_first_puzzle {
                 config.files.push(arg.clone());
             }
-        }
-
-        // Check config values
-        if config.files.is_empty() {
-            return Err("You must add at least one puzzle to solve".to_string());
         }
 
         Ok(config)

@@ -112,6 +112,15 @@ impl Puzzle {
         })
     }
 
+    pub fn generate(size: i32, solution_type: &str) -> Result<Puzzle, String> {
+        let map_goal = goal::generate(size, solution_type)?;
+        Ok(Puzzle {
+            size,
+            map: vec![1, 2, 3, 0, 8, 4, 7, 6, 5],
+            goal: map_goal,
+        })
+    }
+
     pub fn neighbors(&self, node: &Node) -> [Option<Node>; 4] {
         neighbors(self.size, node)
     }
