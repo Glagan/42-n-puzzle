@@ -16,6 +16,8 @@ fn heuristic_by_name(name: &str) -> Option<fn(i32, &Node, &Node) -> f64> {
         return Some(heuristic::euclidean_distance);
     } else if name == "hamming" {
         return Some(heuristic::hamming);
+    } else if name == "linear-conflict" {
+        return Some(heuristic::linear_conflict);
     }
     None
 }
