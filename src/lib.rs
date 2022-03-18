@@ -1,5 +1,3 @@
-use std::slice::Iter;
-
 pub type Node = Vec<i32>;
 
 pub enum Direction {
@@ -9,15 +7,107 @@ pub enum Direction {
     Up,
 }
 
-impl Direction {
-    pub fn iterator() -> Iter<'static, Direction> {
-        static DIRECTIONS: [Direction; 4] = [
-            Direction::Left,
-            Direction::Right,
-            Direction::Down,
-            Direction::Up,
-        ];
-        DIRECTIONS.iter()
+struct Border {
+    max: i32,
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+}
+
+struct Cursor {
+    x: i32,
+    y: i32,
+    direction: Direction,
+    value: i32,
+}
+
+pub struct SnailIterator {
+    size: i32,
+    max: i32,
+    cursor: Cursor,
+    border: Border,
+}
+
+impl SnailIterator {
+    pub fn new(size: i32) -> SnailIterator {
+        SnailIterator {
+            size,
+            max: (size * size),
+            cursor: Cursor {
+                x: 0,
+                y: 0,
+                direction: Direction::Right,
+                value: 1,
+            },
+            border: Border {
+                max: size - 1,
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0,
+            },
+        }
+    }
+
+    pub fn position(&self) -> usize {
+        (self.cursor.x + (self.cursor.y * self.size)) as usize
+    }
+}
+
+impl Iterator for SnailIterator {
+    type Item = (usize, i32);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.cursor.value < self.max {
+            let res = Some((
+                (self.cursor.x + (self.cursor.y * self.size)) as usize,
+                self.cursor.value,
+            ));
+            // Move cursor
+            self.cursor.value += 1;
+            match self.cursor.direction {
+                Direction::Right => {
+                    if self.cursor.x == self.border.max - self.border.right {
+                        self.cursor.direction = Direction::Down;
+                        self.border.top += 1;
+                    }
+                }
+                Direction::Down => {
+                    if self.cursor.y == self.border.max - self.border.bottom {
+                        self.cursor.direction = Direction::Left;
+                        self.border.right += 1;
+                    }
+                }
+                Direction::Left => {
+                    if self.cursor.x == self.border.left {
+                        self.cursor.direction = Direction::Up;
+                        self.border.bottom += 1;
+                    }
+                }
+                Direction::Up => {
+                    if self.cursor.y == self.border.top {
+                        self.cursor.direction = Direction::Right;
+                        self.border.left += 1;
+                    }
+                }
+            };
+            // Update cell
+            self.cursor.x = match self.cursor.direction {
+                Direction::Right => self.cursor.x + 1,
+                Direction::Left => self.cursor.x - 1,
+                _ => self.cursor.x,
+            };
+            self.cursor.y = match self.cursor.direction {
+                Direction::Down => self.cursor.y + 1,
+                Direction::Up => self.cursor.y - 1,
+                _ => self.cursor.y,
+            };
+            // Return initial state
+            res
+        } else {
+            None
+        }
     }
 }
 
@@ -130,7 +220,11 @@ fn last_line_first_column() {
 pub fn print_map(size: i32, map: &Node) {
     let size: usize = size.try_into().unwrap();
     for (index, value) in map.iter().enumerate() {
-        print!("{:3} ", value);
+        if *value == 0 {
+            print!("    ");
+        } else {
+            print!("{:3} ", value);
+        }
         if (index + 1) % size == 0 {
             println!();
         }

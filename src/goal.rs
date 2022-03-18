@@ -1,82 +1,16 @@
-use npuzzle::{Direction, Node};
-
-struct Border {
-    max: i32,
-    left: i32,
-    top: i32,
-    right: i32,
-    bottom: i32,
-}
-
-struct Cursor {
-    x: i32,
-    y: i32,
-    direction: Direction,
-    value: i32,
-}
+use npuzzle::{Node, SnailIterator};
 
 pub fn generate_snail(size: i32) -> Result<Node, String> {
     let puzzle_size = size * size;
     let mut solution: Node = (1..=puzzle_size).collect();
-    let mut border = Border {
-        max: size - 1,
-        left: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
-    };
-    let mut cursor = Cursor {
-        x: 0,
-        y: 0,
-        direction: Direction::Right,
-        value: 1,
-    };
+    let mut iterator = SnailIterator::new(size);
     // Iterate for each cells to add each numbers in "snail" order
-    for _ in 0..puzzle_size - 1 {
-        let v: &mut i32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
-        *v = cursor.value;
-        cursor.value += 1;
-        // Update direction
-        match cursor.direction {
-            Direction::Right => {
-                if cursor.x == border.max - border.right {
-                    cursor.direction = Direction::Down;
-                    border.top += 1;
-                }
-            }
-            Direction::Down => {
-                if cursor.y == border.max - border.bottom {
-                    cursor.direction = Direction::Left;
-                    border.right += 1;
-                }
-            }
-            Direction::Left => {
-                if cursor.x == border.left {
-                    cursor.direction = Direction::Up;
-                    border.bottom += 1;
-                }
-            }
-            Direction::Up => {
-                if cursor.y == border.top {
-                    cursor.direction = Direction::Right;
-                    border.left += 1;
-                }
-            }
-        };
-        // Update cell
-        cursor.x = match cursor.direction {
-            Direction::Right => cursor.x + 1,
-            Direction::Left => cursor.x - 1,
-            _ => cursor.x,
-        };
-        cursor.y = match cursor.direction {
-            Direction::Down => cursor.y + 1,
-            Direction::Up => cursor.y - 1,
-            _ => cursor.y,
-        };
+    for (index, value) in iterator.by_ref() {
+        let v: &mut i32 = &mut solution[index];
+        *v = value;
     }
     // Last empty cell
-    let v: &mut i32 = &mut solution[(cursor.x + (cursor.y * size)) as usize];
+    let v: &mut i32 = &mut solution[iterator.position()];
     *v = 0;
     Ok(solution)
 }
