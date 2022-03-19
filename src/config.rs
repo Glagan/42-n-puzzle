@@ -3,6 +3,7 @@ use std::process;
 
 #[derive(Debug)]
 pub struct Config {
+    pub variant: String,
     pub heuristic_name: String,
     pub solution_type: String,
     pub mode: String,
@@ -18,6 +19,7 @@ impl Config {
 
         // Parse each arguments as option or puzzle path
         let mut config = Config {
+            variant: "ida*".to_string(),
             heuristic_name: "linear-conflict".to_string(),
             solution_type: "snail".to_string(),
             mode: "normal".to_string(),
@@ -31,7 +33,9 @@ impl Config {
             if !found_first_puzzle && arg.starts_with("--") {
                 let split = arg.split_once('=');
                 if let Some((option_name, value)) = split {
-                    if option_name == "--heuristic" {
+                    if option_name == "--variant" {
+                        config.variant = value.to_string();
+                    } else if option_name == "--heuristic" {
                         config.heuristic_name = value.to_string();
                     } else if option_name == "--solution-type" {
                         config.solution_type = value.to_string();
@@ -71,6 +75,10 @@ impl Config {
     }
 
     pub fn check_and_explain(&self) {
+        if ![String::from("ida*"), String::from("a*")].contains(&self.variant) {
+            eprintln!("Unknown variant: {}", self.variant);
+            process::exit(1);
+        }
         if ![
             String::from("snail"),
             String::from("first"),
@@ -96,9 +104,9 @@ impl Config {
         println!("Solution type:       {}", self.solution_type);
         println!("Mode:                {}", self.mode);
         if self.files.is_empty() {
-            println!("(Generate) size:     {}", self.size);
-            println!("(Generate) amount:   {}", self.amount);
-            println!("(Generate) solvable: {}", self.solvable);
+            println!("(Generate) Size:     {}", self.size);
+            println!("(Generate) Amount:   {}", self.amount);
+            println!("(Generate) Solvable: {}", self.solvable);
         }
         println!("###");
     }

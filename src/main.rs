@@ -1,16 +1,29 @@
+use npuzzle::{print_map, Node, Solution};
+use puzzle::Puzzle;
 use std::process;
 use std::time::Instant;
-
-use npuzzle::{print_map, Node};
-use puzzle::Puzzle;
 
 mod a_star;
 mod config;
 mod goal;
 mod heuristic;
+mod ida_star;
 mod puzzle;
 
-fn heuristic_by_name(name: &str) -> Option<fn(i32, &Node, &Node) -> f64> {
+type HeuristicFn = fn(i32, &Node, &Node) -> f64;
+
+type SolveFn = fn(&Puzzle, &str, fn(i32, &Node, &Node) -> f64) -> Result<Solution, String>;
+
+fn solve_by_name(name: &str) -> Option<SolveFn> {
+    if name == "ida*" {
+        return Some(ida_star::solve);
+    } else if name == "a*" {
+        return Some(a_star::solve);
+    }
+    None
+}
+
+fn heuristic_by_name(name: &str) -> Option<HeuristicFn> {
     if name == "manhattan" {
         return Some(heuristic::manhattan);
     } else if name == "euclidean" {
@@ -26,7 +39,8 @@ fn heuristic_by_name(name: &str) -> Option<fn(i32, &Node, &Node) -> f64> {
 fn solve_puzzle(
     config: &config::Config,
     puzzle: &Puzzle,
-    heuristic_fn: fn(i32, &Node, &Node) -> f64,
+    solve_fn: SolveFn,
+    heuristic_fn: HeuristicFn,
 ) {
     println!("{}", puzzle);
     print_map(puzzle.size, &puzzle.goal);
@@ -37,7 +51,7 @@ fn solve_puzzle(
     }
 
     let now = Instant::now();
-    let res = a_star::solve(puzzle, &config.mode, heuristic_fn);
+    let res = solve_fn(puzzle, &config.mode, heuristic_fn);
     let elapsed = now.elapsed();
     match res {
         // Ok(solution) => println!("#> Solution {:#?}", solution),
@@ -83,26 +97,31 @@ fn main() {
     });
     config.check_and_explain();
 
+    // Select variant
+    let solve_fn = solve_by_name(&config.variant).unwrap_or_else(|| {
+        eprintln!("Unknown variant: {}", config.variant);
+        process::exit(1);
+    });
+
     //  Solve each puzzles
     if config.files.is_empty() {
         for i in 1..=config.amount {
             println!("# Random Puzzle [{}]", i);
-            let puzzle =
-                puzzle::Puzzle::generate(config.solvable, config.size, &config.solution_type);
+            let puzzle = Puzzle::generate(config.solvable, config.size, &config.solution_type);
             if let Err(err) = puzzle {
                 eprintln!("#> {}", err);
             } else {
-                solve_puzzle(&config, &puzzle.unwrap(), heuristic_fn);
+                solve_puzzle(&config, &puzzle.unwrap(), solve_fn, heuristic_fn);
             }
         }
     } else {
         for puzzle_path in &config.files {
             println!("# {}", puzzle_path);
-            let puzzle = puzzle::Puzzle::new(puzzle_path, &config.solution_type);
+            let puzzle = Puzzle::new(puzzle_path, &config.solution_type);
             if let Err(err) = puzzle {
                 eprintln!("#> {}", err);
             } else {
-                solve_puzzle(&config, &puzzle.unwrap(), heuristic_fn);
+                solve_puzzle(&config, &puzzle.unwrap(), solve_fn, heuristic_fn);
             }
         }
     }

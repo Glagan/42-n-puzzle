@@ -1,40 +1,7 @@
 use crate::puzzle::Puzzle;
-use npuzzle::{neighbors, Node};
-use std::cmp::Ordering;
+use npuzzle::{neighbors, Node, NodeWithCost, Solution};
 use std::collections::{BinaryHeap, HashMap};
 use std::time::Instant;
-
-#[derive(Clone)]
-struct NodeWithCost {
-    cost: f64,
-    node: Node,
-}
-
-impl Eq for NodeWithCost {}
-
-impl PartialEq for NodeWithCost {
-    fn eq(&self, other: &Self) -> bool {
-        self.cost == other.cost
-    }
-}
-
-impl Ord for NodeWithCost {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.cost.partial_cmp(&self.cost).unwrap().reverse()
-    }
-}
-
-impl PartialOrd for NodeWithCost {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other).reverse())
-    }
-}
-
-pub struct Solution {
-    pub total_used_states: i32,
-    pub biggest_state: usize,
-    pub steps: Vec<Node>,
-}
 
 fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
     let mut full_path = vec![node.clone()];
@@ -121,6 +88,7 @@ pub fn solve(
                 }
             }
         }
+
         if open_set.len() > biggest_state {
             biggest_state = open_set.len() + 1;
         }

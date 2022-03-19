@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 pub type Node = Vec<i32>;
 
 pub enum Direction {
@@ -215,6 +217,38 @@ fn last_line_first_column() {
     assert_eq!(neighbors[1], Some(vec![6, 7, 5, 4, 1, 8, 2, 0, 3]));
     assert_eq!(neighbors[2], None);
     assert_eq!(neighbors[3], Some(vec![6, 7, 5, 0, 1, 8, 4, 2, 3]));
+}
+
+#[derive(Clone)]
+pub struct NodeWithCost {
+    pub cost: f64,
+    pub node: Node,
+}
+
+impl Eq for NodeWithCost {}
+
+impl PartialEq for NodeWithCost {
+    fn eq(&self, other: &Self) -> bool {
+        self.cost == other.cost
+    }
+}
+
+impl Ord for NodeWithCost {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.partial_cmp(&self.cost).unwrap().reverse()
+    }
+}
+
+impl PartialOrd for NodeWithCost {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other).reverse())
+    }
+}
+
+pub struct Solution {
+    pub total_used_states: i32,
+    pub biggest_state: usize,
+    pub steps: Vec<Node>,
 }
 
 pub fn print_map(size: i32, map: &Node) {
