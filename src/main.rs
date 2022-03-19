@@ -31,7 +31,7 @@ fn solve_puzzle(
     println!("{}", puzzle);
     print_map(puzzle.size, &puzzle.goal);
 
-    if !puzzle.is_solvable(&config.mode) {
+    if !puzzle.is_solvable() {
         println!("#> Puzzle is unsolvable for this solution");
         return;
     }
