@@ -15,6 +15,9 @@ Options:
 --mode          normal (default)
                 greedy (skip g(n))
                 uniform (skip h(n))
+--amount        number (amount of puzzle to generate)
+--size          number (size of the generated puzzles)
+--unsolvable    (make generated puzzle unsolvable)
 ```
 
 ## Resources
