@@ -23,6 +23,8 @@ Options:
     * https://doc.rust-lang.org/book/
 * Binary Heap
     * https://doc.rust-lang.org/std/collections/binary_heap/index.html
+* n-puzzle
+    * https://en.wikipedia.org/wiki/15_puzzle#Solvability
 * A*
     * https://en.wikipedia.org/wiki/A*_search_algorithm
     * https://algorithmsinsight.wordpress.com/graph-theory-2/a-star-in-general/
