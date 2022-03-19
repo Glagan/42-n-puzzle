@@ -31,7 +31,7 @@ fn solve_puzzle(
     println!("{}", puzzle);
     print_map(puzzle.size, &puzzle.goal);
 
-    if !puzzle.is_solvable() {
+    if !Puzzle::is_solvable(puzzle) {
         println!("#> Puzzle is unsolvable for this solution");
         return;
     }
@@ -62,7 +62,7 @@ fn solve_puzzle(
             );
             let size: usize = puzzle.size.try_into().unwrap();
             for (index, step) in solution.steps.iter().enumerate() {
-                println!("{:3} {}", index, "#".repeat((index % size) + 1));
+                println!("{:<3} {}", index, "#".repeat((index % size) + 1));
                 print_map(puzzle.size, step);
             }
         }
@@ -85,21 +85,25 @@ fn main() {
 
     //  Solve each puzzles
     if config.files.is_empty() {
-        println!("# Random Puzzle");
-        let puzzle = puzzle::Puzzle::generate(3, &config.solution_type).unwrap_or_else(|err| {
-            eprintln!("#> {}", err);
-            process::exit(1);
-        });
-        solve_puzzle(&config, &puzzle, heuristic_fn);
+        for i in 1..=config.amount {
+            println!("# Random Puzzle [{}]", i);
+            let puzzle =
+                puzzle::Puzzle::generate(config.solvable, config.size, &config.solution_type);
+            if let Err(err) = puzzle {
+                eprintln!("#> {}", err);
+            } else {
+                solve_puzzle(&config, &puzzle.unwrap(), heuristic_fn);
+            }
+        }
     } else {
         for puzzle_path in &config.files {
             println!("# Puzzle {}", puzzle_path);
-            let puzzle =
-                puzzle::Puzzle::new(puzzle_path, &config.solution_type).unwrap_or_else(|err| {
-                    eprintln!("#> {}", err);
-                    process::exit(1);
-                });
-            solve_puzzle(&config, &puzzle, heuristic_fn);
+            let puzzle = puzzle::Puzzle::new(puzzle_path, &config.solution_type);
+            if let Err(err) = puzzle {
+                eprintln!("#> {}", err);
+            } else {
+                solve_puzzle(&config, &puzzle.unwrap(), heuristic_fn);
+            }
         }
     }
 }

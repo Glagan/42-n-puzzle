@@ -7,6 +7,9 @@ pub struct Config {
     pub solution_type: String,
     pub mode: String,
     pub files: Vec<String>,
+    pub solvable: bool,
+    pub amount: u32,
+    pub size: i32,
 }
 
 impl Config {
@@ -19,6 +22,9 @@ impl Config {
             solution_type: "snail".to_string(),
             mode: "normal".to_string(),
             files: Vec::new(),
+            solvable: true,
+            amount: 1,
+            size: 3,
         };
         let mut found_first_puzzle = false;
         for arg in args.iter() {
@@ -31,6 +37,24 @@ impl Config {
                         config.solution_type = value.to_string();
                     } else if option_name == "--mode" {
                         config.mode = value.to_string();
+                    } else if option_name == "--unsolvable" {
+                        config.solvable = false;
+                    } else if option_name == "--amount" {
+                        let amount = value.to_string().parse();
+                        if let Err(err) = amount {
+                            return Err(format!("Invalid amount `{}`: {}", value, err));
+                        }
+                        config.amount = amount.unwrap();
+                    } else if option_name == "--size" {
+                        let size = value.to_string().parse();
+                        if let Err(err) = size {
+                            return Err(format!("Invalid size `{}`: {}", value, err));
+                        }
+                        let size = size.unwrap();
+                        if size < 3 {
+                            return Err(format!("Invalid amount {}, must be at least 3", value));
+                        }
+                        config.size = size;
                     }
                 } else {
                     return Err(format!("Malformed argument {}", arg));
@@ -68,9 +92,14 @@ impl Config {
             process::exit(1);
         }
         println!("###");
-        println!("Using heuristic: {}", self.heuristic_name);
-        println!("Solution type:   {}", self.solution_type);
-        println!("Mode:            {}", self.mode);
+        println!("Using heuristic:     {}", self.heuristic_name);
+        println!("Solution type:       {}", self.solution_type);
+        println!("Mode:                {}", self.mode);
+        if self.files.is_empty() {
+            println!("(Generate) size:     {}", self.size);
+            println!("(Generate) amount:   {}", self.amount);
+            println!("(Generate) solvable: {}", self.solvable);
+        }
         println!("###");
     }
 }

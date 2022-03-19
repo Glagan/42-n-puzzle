@@ -1,6 +1,8 @@
 use crate::goal;
 use core::fmt;
 use npuzzle::{neighbors, Node};
+use rand::prelude::SliceRandom;
+use rand::thread_rng;
 use std::fs;
 use std::num::ParseIntError;
 
@@ -109,6 +111,9 @@ impl Puzzle {
             let at_cell = &mut goal[index];
             *at_cell = true;
         }
+        if goal.iter().any(|&cell| !cell) {
+            return Err("Missing numbers in map".to_string());
+        }
         Ok(())
     }
 
@@ -130,43 +135,52 @@ impl Puzzle {
         })
     }
 
-    pub fn generate(size: i32, solution_type: &str) -> Result<Puzzle, String> {
-        let map_goal = goal::generate(size, solution_type)?;
-        Ok(Puzzle {
-            size,
-            map: vec![1, 2, 3, 0, 8, 4, 7, 6, 5],
-            goal: map_goal,
-        })
+    pub fn generate(solvable: bool, size: i32, solution_type: &str) -> Result<Puzzle, String> {
+        let mut map: Node = (0..=(size * size) - 1).collect();
+        let goal = goal::generate(size, solution_type)?;
+        let mut rng = thread_rng();
+        map.shuffle(&mut rng);
+        // Ouch
+        while (solvable && !Puzzle::is_map_solvable(size, &map, &goal))
+            || (!solvable && Puzzle::is_map_solvable(size, &map, &goal))
+        {
+            map.shuffle(&mut rng);
+        }
+        Ok(Puzzle { size, map, goal })
     }
 
     pub fn neighbors(&self, node: &Node) -> [Option<Node>; 4] {
         neighbors(self.size, node)
     }
 
-    fn taxicab_distance(&self) -> i32 {
-        let size = self.size as usize;
-        let current_goal = self.map.iter().position(|&cell| cell == 0).unwrap();
-        let real_goal = self.goal.iter().position(|&cell| cell == 0).unwrap();
+    fn taxicab_distance(size: i32, map: &Node, goal: &Node) -> i32 {
+        let size = size as usize;
+        let current_goal = map.iter().position(|&cell| cell == 0).unwrap();
+        let real_goal = goal.iter().position(|&cell| cell == 0).unwrap();
         let (c_x, c_y) = ((current_goal % size) as i32, (current_goal / size) as i32);
         let (g_x, g_y) = ((real_goal % size) as i32, (real_goal / size) as i32);
         (c_x - g_x).abs() + (c_y - g_y).abs()
     }
 
-    pub fn is_solvable(&self) -> bool {
+    fn is_map_solvable(size: i32, map: &Node, goal: &Node) -> bool {
         // Count number of movements and the empty row depending on each solutions
         // Since the snail goal can be used we count the difference from the goal of the checked cells
         let mut inversions = 0;
-        for (index, &i) in self.map.iter().enumerate() {
-            for &j in self.map.iter().skip(index) {
-                if self.goal.iter().position(|&cell| cell == i).unwrap()
-                    > self.goal.iter().position(|&cell| cell == j).unwrap()
+        for (index, &i) in map.iter().enumerate() {
+            for &j in map.iter().skip(index) {
+                if goal.iter().position(|&cell| cell == i).unwrap()
+                    > goal.iter().position(|&cell| cell == j).unwrap()
                 {
                     inversions += 1;
                 }
             }
         }
-        let taxicab = self.taxicab_distance();
+        let taxicab = Puzzle::taxicab_distance(size, map, goal);
         (inversions % 2) == (taxicab % 2)
+    }
+
+    pub fn is_solvable(&self) -> bool {
+        Puzzle::is_map_solvable(self.size, &self.map, &self.goal)
     }
 }
 
