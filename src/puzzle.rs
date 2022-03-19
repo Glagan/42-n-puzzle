@@ -125,29 +125,30 @@ impl Puzzle {
         neighbors(self.size, node)
     }
 
+    fn taxicab_distance(&self) -> i32 {
+        let size = self.size as usize;
+        let current_goal = self.map.iter().position(|&cell| cell == 0).unwrap();
+        let real_goal = self.goal.iter().position(|&cell| cell == 0).unwrap();
+        let (c_x, c_y) = ((current_goal % size) as i32, (current_goal / size) as i32);
+        let (g_x, g_y) = ((real_goal % size) as i32, (real_goal / size) as i32);
+        (c_x - g_x).abs() + (c_y - g_y).abs()
+    }
+
     pub fn is_solvable(&self) -> bool {
-        let size: usize = self.size.try_into().unwrap();
         // Count number of movements and the empty row depending on each solutions
-        let empty_row: usize = (self.map.iter().position(|&v| v == 0).unwrap() / size) + 1;
+        // Since the snail goal can be used we count the difference from the goal of the checked cells
         let mut inversions = 0;
         for (index, &i) in self.map.iter().enumerate() {
             for &j in self.map.iter().skip(index) {
-                if j != 0 && i > j {
+                if self.goal.iter().position(|&cell| cell == i).unwrap()
+                    > self.goal.iter().position(|&cell| cell == j).unwrap()
+                {
                     inversions += 1;
                 }
             }
         }
-        // Even puzzle size
-        if size % 2 == 0 {
-            // Row with empty cell is even
-            if empty_row % 2 == 0 {
-                inversions % 2 != 0
-            } else {
-                inversions % 2 == 0
-            }
-        } else {
-            inversions % 2 == 0
-        }
+        let taxicab = self.taxicab_distance();
+        (inversions % 2) == (taxicab % 2)
     }
 }
 

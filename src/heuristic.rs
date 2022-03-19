@@ -23,10 +23,9 @@ fn hamming_two() {
 }
 
 fn manhattan_distance(size: i32, index: usize, goal: usize) -> f64 {
-    let x_n = (index % size as usize) as i32;
-    let y_n = (index as f64 / 3.).floor() as i32;
-    let x_g = (goal % size as usize) as i32;
-    let y_g = (goal as f64 / 3.).floor() as i32;
+    let size = size as usize;
+    let (x_n, y_n) = ((index % size) as i32, (index / size) as i32);
+    let (x_g, y_g) = ((goal % size) as i32, (goal / size) as i32);
     (x_n - x_g).abs() as f64 + (y_n - y_g).abs() as f64
 }
 
@@ -76,11 +75,10 @@ pub fn euclidean_distance(size: i32, node: &Node, goal: &Node) -> f64 {
         .enumerate()
         .map(|(index, (&x, &y))| {
             if x > 0 && x != y {
-                let x_n = (index % size as usize) as i32;
-                let y_n = (index as f64 / 3.).floor() as i32;
-                let index = goal.iter().position(|&to_find| x == to_find).unwrap();
-                let x_g = (index % size as usize) as i32;
-                let y_g = (index as f64 / 3.).floor() as i32;
+                let size = size as usize;
+                let goal_index = goal.iter().position(|&to_find| x == to_find).unwrap();
+                let (x_n, y_n) = ((index % size) as i32, (index / size) as i32);
+                let (x_g, y_g) = ((goal_index % size) as i32, (goal_index / size) as i32);
                 ((x_n - x_g) as f64).powf(2.) + ((y_n - y_g) as f64).powf(2.)
             } else {
                 0.
