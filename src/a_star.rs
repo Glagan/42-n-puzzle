@@ -1,30 +1,13 @@
 use crate::puzzle::Puzzle;
-use npuzzle::Node;
-use std::cell::RefCell;
+use npuzzle::{neighbors, Node};
 use std::cmp::Ordering;
-use std::collections::BinaryHeap;
-use std::rc::Rc;
+use std::collections::{BinaryHeap, HashMap};
 use std::time::Instant;
 
 #[derive(Clone)]
 struct NodeWithCost {
-    depth: i32,
     cost: f64,
     node: Node,
-    parent: Option<Rc<RefCell<NodeWithCost>>>,
-    explored: bool,
-}
-
-impl NodeWithCost {
-    pub fn start(puzzle: &Puzzle) -> NodeWithCost {
-        NodeWithCost {
-            depth: 0,
-            node: puzzle.map.clone(),
-            cost: 0.,
-            parent: None,
-            explored: false,
-        }
-    }
 }
 
 impl Eq for NodeWithCost {}
@@ -43,7 +26,7 @@ impl Ord for NodeWithCost {
 
 impl PartialOrd for NodeWithCost {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cost.partial_cmp(&other.cost).unwrap().reverse())
+        Some(self.cmp(other).reverse())
     }
 }
 
@@ -53,14 +36,13 @@ pub struct Solution {
     pub steps: Vec<Node>,
 }
 
-fn construct_solution(node: Rc<RefCell<NodeWithCost>>) -> Vec<Node> {
-    let mut full_path = vec![];
+fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
+    let mut full_path = vec![node.clone()];
 
-    let mut current = Some(node);
-    while let Some(node) = current {
-        let borrowed = node.borrow();
-        full_path.push(borrowed.node.clone());
-        current = borrowed.parent.as_ref().map(Rc::clone);
+    let mut current = node;
+    while paths.contains_key(current) {
+        current = &paths[current];
+        full_path.push(current.clone());
     }
 
     full_path.reverse();
@@ -84,58 +66,68 @@ pub fn solve(
     let mut biggest_state: usize = 1; // 1 is the initial state
 
     // State
-    let mut open_set: BinaryHeap<Rc<RefCell<NodeWithCost>>> = BinaryHeap::new();
-    open_set.push(Rc::new(RefCell::new(NodeWithCost::start(puzzle))));
+    let mut open_set = BinaryHeap::new();
+    open_set.push(NodeWithCost {
+        cost: 0.,
+        node: puzzle.map.clone(),
+    });
+    // cameFrom -- best previous path to a node
+    let mut best_path_to_node: HashMap<Node, Node> = HashMap::new();
+    // gScore -- cost of the best path to a node
+    let mut best_cost_to_node: HashMap<Node, f64> = HashMap::new();
+    best_cost_to_node.insert(puzzle.map.clone(), 0.);
 
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
         total_used_states += 1;
 
         // Check if it's the goal
-        if current.borrow().node == puzzle.goal {
+        if current.node == puzzle.goal {
             return Ok(Solution {
                 total_used_states,
                 biggest_state,
-                steps: construct_solution(current),
+                steps: reconstruct_path(&best_path_to_node, &current.node),
             });
         }
 
-        // If the current node neighbors are not generated, they were never explored
-        if !current.borrow().explored {
-            current.borrow_mut().explored = true;
-            let neighbors: Vec<Rc<RefCell<NodeWithCost>>> = puzzle
-                .neighbors(&current.borrow().node)
-                .into_iter()
-                .flatten()
-                .map(|neighbor| {
-                    let depth = current.borrow().depth + 1;
-                    Rc::new(RefCell::new(NodeWithCost {
-                        depth,
+        for neighbor in neighbors(puzzle.size, &current.node).into_iter().flatten() {
+            let next_move_cost = best_cost_to_node.get(&current.node).unwrap() + 1.;
+            let neighbor_previous_cost = best_cost_to_node.get(&neighbor);
+            // Check the node only if it was never checked or if it has a better cost than the last found
+            if neighbor_previous_cost.is_none()
+                || next_move_cost < *(neighbor_previous_cost.unwrap())
+            {
+                // Update each state hash maps
+                if !best_path_to_node.contains_key(&neighbor) {
+                    best_path_to_node.insert(neighbor.clone(), current.node.clone());
+                } else if best_path_to_node[&neighbor] != current.node {
+                    *best_path_to_node.get_mut(&neighbor).unwrap() = current.node.clone();
+                }
+                if !best_cost_to_node.contains_key(&neighbor) {
+                    best_cost_to_node.insert(neighbor.clone(), next_move_cost);
+                } else {
+                    *best_cost_to_node.get_mut(&neighbor).unwrap() = next_move_cost;
+                }
+                // Add to open_set if it's not already inside
+                if !open_set.iter().any(|node| node.node == neighbor) {
+                    open_set.push(NodeWithCost {
                         cost: match mode {
-                            0 => depth as f64 + heuristic(puzzle.size, &neighbor, &puzzle.goal),
+                            0 => next_move_cost + heuristic(puzzle.size, &neighbor, &puzzle.goal),
                             1 => heuristic(puzzle.size, &neighbor, &puzzle.goal), // Ignore depth
-                            _ => depth as f64, // Ignore heuristic
+                            _ => next_move_cost, // Ignore heuristic
                         },
                         node: neighbor,
-                        parent: Some(Rc::clone(&current)),
-                        explored: false,
-                    }))
-                })
-                .collect();
-            // Just add all neighbors to the open_set and it will use them if they have a good cost in the priority queue
-            for neighbor in neighbors {
-                open_set.push(Rc::clone(&neighbor))
-            }
-            if open_set.len() > biggest_state {
-                biggest_state = open_set.len() + 1;
+                    });
+                }
             }
         }
+        if open_set.len() > biggest_state {
+            biggest_state = open_set.len() + 1;
+        }
 
-        // println!("it {}", it);
         if total_used_states % 100000 == 0 {
-            // println!("{:#?}", best_cost_to_node);
             println!(
-                "# Total number of states ever selected: {} in {:.2?}",
+                "# Selected {} states in {:.2?}",
                 total_used_states,
                 now.elapsed()
             );

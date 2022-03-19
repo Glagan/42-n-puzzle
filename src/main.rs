@@ -97,7 +97,7 @@ fn main() {
         }
     } else {
         for puzzle_path in &config.files {
-            println!("# Puzzle {}", puzzle_path);
+            println!("# {}", puzzle_path);
             let puzzle = puzzle::Puzzle::new(puzzle_path, &config.solution_type);
             if let Err(err) = puzzle {
                 eprintln!("#> {}", err);

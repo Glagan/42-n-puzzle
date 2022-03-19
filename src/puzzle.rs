@@ -1,6 +1,6 @@
 use crate::goal;
 use core::fmt;
-use npuzzle::{neighbors, Node};
+use npuzzle::Node;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::fs;
@@ -147,10 +147,6 @@ impl Puzzle {
             map.shuffle(&mut rng);
         }
         Ok(Puzzle { size, map, goal })
-    }
-
-    pub fn neighbors(&self, node: &Node) -> [Option<Node>; 4] {
-        neighbors(self.size, node)
     }
 
     fn taxicab_distance(size: i32, map: &Node, goal: &Node) -> i32 {
