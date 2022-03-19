@@ -53,16 +53,14 @@ impl Puzzle {
             } else if let Some(cols) = parsed_line {
                 if size == 0 {
                     if cols.len() != 1 {
-                        return Err(
-                            "Expected only 1 value as the puzzle size on the first line."
-                                .to_string(),
-                        );
+                        return Err("Expected only 1 value as the puzzle size on the first line"
+                            .to_string());
                     }
                     size = cols[0];
                 } else {
                     if cols.len() != size.try_into().unwrap() {
                         return Err(format!(
-                            "Invalid number of cells for the line `{}`, expected {}.",
+                            "Invalid number of cells for the line `{}`, expected {}",
                             line, size,
                         ));
                     }
@@ -70,7 +68,7 @@ impl Puzzle {
                         if col == 0 {
                             if empty_col {
                                 return Err(
-                                    "There can be only one empty cell in the puzzle.".to_string()
+                                    "There can be only one empty cell in the puzzle".to_string()
                                 );
                             } else {
                                 empty_col = true;
@@ -87,12 +85,31 @@ impl Puzzle {
         let expected_count = size * size;
         if cell_count != expected_count {
             return Err(format!(
-                "Invalid number of cells `{}`, expected {}.",
+                "Invalid number of cells `{}`, expected {}",
                 cell_count, expected_count
             ));
         }
 
         Ok((size, map))
+    }
+
+    // Check that the puzzle has all required valid numbers for the given size
+    // -- and an empty cell
+    fn check_validity(size: i32, map: &Node) -> Result<(), String> {
+        let max_size = (size * size) - 1;
+        let mut goal: Vec<bool> = vec![false; (max_size + 1) as usize];
+        for &value in map.iter() {
+            if value > max_size || value < 0 {
+                return Err(format!("Invalid number `{}` found in map", value));
+            }
+            let index = value as usize;
+            if goal[index] {
+                return Err(format!("Duplicate number `{}` found in map", value));
+            }
+            let at_cell = &mut goal[index];
+            *at_cell = true;
+        }
+        Ok(())
     }
 
     pub fn new(path: &str, solution_type: &str) -> Result<Puzzle, String> {
@@ -103,6 +120,7 @@ impl Puzzle {
 
         let content = content.unwrap();
         let (size, map) = Puzzle::parse_content(&content)?;
+        Puzzle::check_validity(size, &map)?;
 
         let map_goal = goal::generate(size, solution_type)?;
         Ok(Puzzle {

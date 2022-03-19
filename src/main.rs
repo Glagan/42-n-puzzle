@@ -96,7 +96,7 @@ fn main() {
             println!("# Puzzle {}", puzzle_path);
             let puzzle =
                 puzzle::Puzzle::new(puzzle_path, &config.solution_type).unwrap_or_else(|err| {
-                    eprintln!("#> `{}`: {}", puzzle_path, err);
+                    eprintln!("#> {}", err);
                     process::exit(1);
                 });
             solve_puzzle(&config, &puzzle, heuristic_fn);
