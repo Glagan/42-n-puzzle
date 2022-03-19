@@ -1,4 +1,4 @@
-use crate::goal;
+use crate::{goal, heuristic};
 use core::fmt;
 use npuzzle::Node;
 use rand::prelude::SliceRandom;
@@ -149,15 +149,6 @@ impl Puzzle {
         Ok(Puzzle { size, map, goal })
     }
 
-    fn taxicab_distance(size: i32, map: &Node, goal: &Node) -> i32 {
-        let size = size as usize;
-        let current_goal = map.iter().position(|&cell| cell == 0).unwrap();
-        let real_goal = goal.iter().position(|&cell| cell == 0).unwrap();
-        let (c_x, c_y) = ((current_goal % size) as i32, (current_goal / size) as i32);
-        let (g_x, g_y) = ((real_goal % size) as i32, (real_goal / size) as i32);
-        (c_x - g_x).abs() + (c_y - g_y).abs()
-    }
-
     fn is_map_solvable(size: i32, map: &Node, goal: &Node) -> bool {
         // Count number of movements and the empty row depending on each solutions
         // Since the snail goal can be used we count the difference from the goal of the checked cells
@@ -171,7 +162,10 @@ impl Puzzle {
                 }
             }
         }
-        let taxicab = Puzzle::taxicab_distance(size, map, goal);
+        // Check with manhattan distance
+        let current_goal = map.iter().position(|&cell| cell == 0).unwrap();
+        let real_goal = goal.iter().position(|&cell| cell == 0).unwrap();
+        let taxicab = heuristic::manhattan_distance(size, current_goal, real_goal) as i32;
         (inversions % 2) == (taxicab % 2)
     }
 

@@ -22,7 +22,7 @@ fn hamming_two() {
     assert_eq!(hamming(3, &left, &right), 9.)
 }
 
-fn manhattan_distance(size: i32, index: usize, goal: usize) -> f64 {
+pub fn manhattan_distance(size: i32, index: usize, goal: usize) -> f64 {
     let size = size as usize;
     let (x_n, y_n) = ((index % size) as i32, (index / size) as i32);
     let (x_g, y_g) = ((goal % size) as i32, (goal / size) as i32);
