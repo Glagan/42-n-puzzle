@@ -20,7 +20,7 @@ impl Config {
         // Parse each arguments as option or puzzle path
         let mut config = Config {
             variant: "ida*".to_string(),
-            heuristic_name: "linear-conflict".to_string(),
+            heuristic_name: "linear-conflicts".to_string(),
             solution_type: "snail".to_string(),
             mode: "normal".to_string(),
             files: Vec::new(),

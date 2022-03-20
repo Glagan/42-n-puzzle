@@ -100,61 +100,76 @@ fn euclidean_distance_two() {
     assert_eq!(euclidean_distance(3, &left, &right), 5.0990195135927845)
 }
 
+struct LinearConflictCell {
+    goal: usize,
+    goal_line: usize,
+    goal_column: usize,
+    line: usize,
+    column: usize,
+}
+
 // Sum of the manhattan distance + linear conflicts for each cell in the Node
 // sum(abs(x - y)) + 2*linear_conflicts
-pub fn linear_conflict(size: i32, node: &[i32], goal: &[i32]) -> f64 {
+pub fn linear_conflicts(size: i32, node: &[i32], goal: &[i32]) -> f64 {
     let manhattan_distance = manhattan(size, node, goal);
     let size: usize = size.try_into().unwrap();
     let mut linear_conflicts = 0.;
 
-    // j is the node being checked and k is the next in row/column
-    let total_len = node.len();
-    for (index, &j) in node.iter().enumerate() {
-        if index + 1 == node.len() {
-            break;
-        }
-        // Process cells on the same line for horizontal conflicts
-        if (index + 1) % size != 0 {
-            // j is on the left, k is on the right
-            let k = node[index + 1];
-            // Ignore empty cell
-            if j == 0 || k == 0 {
-                continue;
+    // Build goal map to avoid recalculation
+    let cell_state: Vec<LinearConflictCell> = (0..(size * size))
+        .map(|index| {
+            let cell_value = node[index];
+            let goal = goal.iter().position(|&v| cell_value == v).unwrap();
+            LinearConflictCell {
+                goal,
+                goal_line: goal / size,
+                goal_column: goal % size,
+                line: index / size,
+                column: index % size,
             }
-            let line = index / size;
-            let goal_j = goal.iter().position(|&v| j == v).unwrap();
-            let goal_k = goal.iter().position(|&v| k == v).unwrap();
-            // The goal positions of j and k are on the same lines
-            // -- and j is on the left of k
-            let goal_j_line = goal_j / size;
-            if goal_j_line == line
-                && goal_j_line == (goal_k / size)
-                && goal_j > 0
-                && goal_j - 1 == goal_k
-            {
-                linear_conflicts += 1.;
+        })
+        .collect();
+
+    // j is the node being checked and k is the next in row/column
+    for (index, &j) in node.iter().enumerate() {
+        // Ignore empty cell
+        if j == 0 {
+            continue;
+        }
+        // Calculate j shared state between rows and columns
+        let current_cell = &cell_state[index];
+        // Process cells on the same line for horizontal conflicts
+        if current_cell.column > 0 && current_cell.line == current_cell.goal_line {
+            // j is on the right, k is on the left
+            for offset in 1..=current_cell.column {
+                let k = node[index - offset];
+                if k == 0 {
+                    continue;
+                }
+                let k_cell = &cell_state[index - offset];
+                // The goal positions of j and k are on the same lines
+                // -- and j is on the right from k
+                if current_cell.goal_line == k_cell.goal_line && k_cell.goal >= current_cell.goal {
+                    linear_conflicts += 1.;
+                }
             }
         }
         // --  and row for vertical conflicts
-        if (index + size) < total_len {
-            // j is on top, k is down
-            let k = node[index + size];
-            // Ignore empty cell
-            if j == 0 || k == 0 {
-                continue;
-            }
-            let column = index % size;
-            let goal_j = goal.iter().position(|&v| j == v).unwrap();
-            let goal_k = goal.iter().position(|&v| k == v).unwrap();
-            // The goal positions of j and k are on the same lines
-            // -- and j is on the left of k
-            let goal_j_line = goal_j % size;
-            if goal_j_line == column
-                && goal_j_line == (goal_k % size)
-                && goal_j >= size
-                && goal_j - size == goal_k
-            {
-                linear_conflicts += 1.;
+        if current_cell.line > 0 && current_cell.column == current_cell.goal_column {
+            // j is down, k is on top
+            for offset in 1..=current_cell.line {
+                let k = node[index - (offset * size)];
+                if k == 0 {
+                    continue;
+                }
+                let k_cell = &cell_state[index - (offset * size)];
+                // The goal positions of j and k are on the same columns
+                // -- and j is down from k
+                if current_cell.goal_column == k_cell.goal_column
+                    && k_cell.goal >= current_cell.goal
+                {
+                    linear_conflicts += 1.;
+                }
             }
         }
     }
@@ -163,29 +178,29 @@ pub fn linear_conflict(size: i32, node: &[i32], goal: &[i32]) -> f64 {
 }
 
 #[test]
-fn linear_conflict_one() {
+fn linear_conflicts_one() {
     let left = vec![1, 2, 3, 4, 5, 6, 7, 8, 0];
     let right = vec![1, 2, 3, 4, 5, 6, 7, 0, 8];
-    assert_eq!(linear_conflict(3, &left, &right), 1.)
+    assert_eq!(linear_conflicts(3, &left, &right), 1.)
 }
 
 #[test]
-fn linear_conflict_two() {
+fn linear_conflicts_two() {
     let left = vec![18, 8, 7, 4, 9, 6, 12, 24, 11];
     let right = vec![12, 24, 18, 8, 7, 4, 11, 9, 6];
-    assert_eq!(linear_conflict(3, &left, &right), 16.)
+    assert_eq!(linear_conflicts(3, &left, &right), 16.)
 }
 
 #[test]
-fn linear_conflict_three() {
+fn linear_conflicts_three() {
     let left = vec![2, 1, 3, 8, 0, 4, 7, 6, 5];
     let right = vec![1, 2, 3, 8, 0, 4, 7, 6, 5];
-    assert_eq!(linear_conflict(3, &left, &right), 4.)
+    assert_eq!(linear_conflicts(3, &left, &right), 4.)
 }
 
 #[test]
-fn linear_conflict_four() {
+fn linear_conflicts_four() {
     let left = vec![8, 2, 3, 1, 0, 4, 7, 6, 5];
     let right = vec![1, 2, 3, 8, 0, 4, 7, 6, 5];
-    assert_eq!(linear_conflict(3, &left, &right), 4.)
+    assert_eq!(linear_conflicts(3, &left, &right), 4.)
 }

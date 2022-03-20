@@ -28,8 +28,8 @@ fn heuristic_by_name(name: &str) -> Option<HeuristicFn> {
         return Some(heuristic::euclidean_distance);
     } else if name == "hamming" {
         return Some(heuristic::hamming);
-    } else if name == "linear-conflict" {
-        return Some(heuristic::linear_conflict);
+    } else if name == "linear-conflicts" {
+        return Some(heuristic::linear_conflicts);
     }
     None
 }
