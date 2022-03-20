@@ -100,7 +100,8 @@ impl Config {
             process::exit(1);
         }
         println!("###");
-        println!("Using heuristic:     {}", self.heuristic_name);
+        println!("Variant:             {}", self.variant);
+        println!("Heuristic:           {}", self.heuristic_name);
         println!("Solution type:       {}", self.solution_type);
         println!("Mode:                {}", self.mode);
         if self.files.is_empty() {
