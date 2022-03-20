@@ -49,7 +49,7 @@ pub fn evaluate_branch(
     }
     // Sort each neighbors by their heuristic value
     let mut neighbors = neighbors(puzzle.size, node).map(|neighbor| {
-        if !matches!(mode, Mode::Uniform) && neighbor.is_some() {
+        if neighbor.is_some() {
             let neighbor = neighbor.unwrap();
             (
                 heuristic(puzzle.size, &neighbor, &puzzle.goal),
