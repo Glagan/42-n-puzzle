@@ -252,7 +252,7 @@ impl PartialOrd for NodeWithCost {
 }
 
 pub struct Solution {
-    pub total_used_states: i32,
+    pub total_used_states: usize,
     pub biggest_state: usize,
     pub steps: Vec<Vec<i32>>,
 }

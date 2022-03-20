@@ -3,7 +3,7 @@ use npuzzle::{neighbors, HeuristicFn, Mode, Solution};
 use std::time::Instant;
 
 pub struct Summary {
-    total_used_states: i32,
+    total_used_states: usize,
     biggest_state: usize,
 }
 
