@@ -1,4 +1,4 @@
-use npuzzle::{print_map, Node, Solution};
+use npuzzle::{print_map, Solution};
 use puzzle::Puzzle;
 use std::process;
 use std::time::Instant;
@@ -10,9 +10,9 @@ mod heuristic;
 mod ida_star;
 mod puzzle;
 
-type HeuristicFn = fn(i32, &Node, &Node) -> f64;
+type HeuristicFn = fn(i32, &[i32], &[i32]) -> f64;
 
-type SolveFn = fn(&Puzzle, &str, fn(i32, &Node, &Node) -> f64) -> Result<Solution, String>;
+type SolveFn = fn(&Puzzle, &str, fn(i32, &[i32], &[i32]) -> f64) -> Result<Solution, String>;
 
 fn solve_by_name(name: &str) -> Option<SolveFn> {
     if name == "ida*" {

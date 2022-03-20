@@ -1,6 +1,5 @@
 use crate::{goal, heuristic};
 use core::fmt;
-use npuzzle::Node;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::fs;
@@ -8,8 +7,8 @@ use std::num::ParseIntError;
 
 pub struct Puzzle {
     pub size: i32,
-    pub map: Node,
-    pub goal: Node,
+    pub map: Vec<i32>,
+    pub goal: Vec<i32>,
 }
 
 impl Puzzle {
@@ -42,10 +41,10 @@ impl Puzzle {
         Ok(Some(clean_cols))
     }
 
-    fn parse_content(content: &str) -> Result<(i32, Node), String> {
+    fn parse_content(content: &str) -> Result<(i32, Vec<i32>), String> {
         let mut size: i32 = 0;
         let mut empty_col: bool = false;
-        let mut map: Node = Vec::new();
+        let mut map: Vec<i32> = Vec::new();
 
         // Parse each lines and check for errors
         for line in content.lines() {
@@ -97,7 +96,7 @@ impl Puzzle {
 
     // Check that the puzzle has all required valid numbers for the given size
     // -- and an empty cell
-    fn check_validity(size: i32, map: &Node) -> Result<(), String> {
+    fn check_validity(size: i32, map: &[i32]) -> Result<(), String> {
         let max_size = (size * size) - 1;
         let mut goal: Vec<bool> = vec![false; (max_size + 1) as usize];
         for &value in map.iter() {
@@ -136,7 +135,7 @@ impl Puzzle {
     }
 
     pub fn generate(solvable: bool, size: i32, solution_type: &str) -> Result<Puzzle, String> {
-        let mut map: Node = (0..=(size * size) - 1).collect();
+        let mut map: Vec<i32> = (0..=(size * size) - 1).collect();
         let goal = goal::generate(size, solution_type)?;
         let mut rng = thread_rng();
         map.shuffle(&mut rng);
@@ -149,7 +148,7 @@ impl Puzzle {
         Ok(Puzzle { size, map, goal })
     }
 
-    fn is_map_solvable(size: i32, map: &Node, goal: &Node) -> bool {
+    fn is_map_solvable(size: i32, map: &[i32], goal: &[i32]) -> bool {
         // Count number of movements and the empty row depending on each solutions
         // Since the snail goal can be used we count the difference from the goal of the checked cells
         let mut inversions = 0;

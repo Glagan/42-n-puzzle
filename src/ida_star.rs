@@ -1,5 +1,5 @@
 use crate::{puzzle::Puzzle, HeuristicFn};
-use npuzzle::{neighbors, Mode, Node, Solution};
+use npuzzle::{neighbors, Mode, Solution};
 use std::time::Instant;
 
 pub struct Summary {
@@ -8,14 +8,14 @@ pub struct Summary {
 }
 
 pub struct Branch<'a> {
-    path: &'a mut Vec<Node>,
+    path: &'a mut Vec<Vec<i32>>,
     depth: f64,
     bound: f64,
 }
 
 pub struct BranchResult {
     score: f64,
-    result: Option<Node>,
+    result: Option<Vec<i32>>,
 }
 
 pub fn evaluate_branch(

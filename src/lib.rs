@@ -1,7 +1,5 @@
 use std::cmp::Ordering;
 
-pub type Node = Vec<i32>;
-
 pub enum Direction {
     Left,
     Right,
@@ -113,7 +111,7 @@ impl Iterator for SnailIterator {
     }
 }
 
-pub fn neighbors(size: i32, source: &Node) -> [Option<Node>; 4] {
+pub fn neighbors(size: i32, source: &[i32]) -> [Option<Vec<i32>>; 4] {
     let index: i32 = source.iter().position(|&cell| cell == 0).unwrap() as i32;
     [
         // Left
@@ -121,7 +119,7 @@ pub fn neighbors(size: i32, source: &Node) -> [Option<Node>; 4] {
             if index == 0 || index % size == 0 {
                 None
             } else {
-                let mut cpy = source.clone();
+                let mut cpy = Vec::from(source);
                 let index: usize = index.try_into().unwrap();
                 cpy[index] = cpy[index - 1];
                 cpy[index - 1] = 0;
@@ -133,7 +131,7 @@ pub fn neighbors(size: i32, source: &Node) -> [Option<Node>; 4] {
             if (index + 1) % size == 0 {
                 None
             } else {
-                let mut cpy = source.clone();
+                let mut cpy = Vec::from(source);
                 let index: usize = index.try_into().unwrap();
                 cpy[index] = cpy[index + 1];
                 cpy[index + 1] = 0;
@@ -146,7 +144,7 @@ pub fn neighbors(size: i32, source: &Node) -> [Option<Node>; 4] {
                 None
             } else {
                 let size: usize = size.try_into().unwrap();
-                let mut cpy = source.clone();
+                let mut cpy = Vec::from(source);
                 let index: usize = index.try_into().unwrap();
                 cpy[index] = cpy[index + size];
                 cpy[index + size] = 0;
@@ -159,7 +157,7 @@ pub fn neighbors(size: i32, source: &Node) -> [Option<Node>; 4] {
                 None
             } else {
                 let size: usize = size.try_into().unwrap();
-                let mut cpy = source.clone();
+                let mut cpy = Vec::from(source);
                 let index: usize = index.try_into().unwrap();
                 cpy[index] = cpy[index - size];
                 cpy[index - size] = 0;
@@ -228,7 +226,7 @@ pub enum Mode {
 #[derive(Clone)]
 pub struct NodeWithCost {
     pub cost: f64,
-    pub node: Node,
+    pub node: Vec<i32>,
 }
 
 impl Eq for NodeWithCost {}
@@ -254,10 +252,10 @@ impl PartialOrd for NodeWithCost {
 pub struct Solution {
     pub total_used_states: i32,
     pub biggest_state: usize,
-    pub steps: Vec<Node>,
+    pub steps: Vec<Vec<i32>>,
 }
 
-pub fn print_map(size: i32, map: &Node) {
+pub fn print_map(size: i32, map: &[i32]) {
     let size: usize = size.try_into().unwrap();
     for (index, value) in map.iter().enumerate() {
         if *value == 0 {

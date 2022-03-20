@@ -1,26 +1,23 @@
 use crate::puzzle::Puzzle;
-use npuzzle::{neighbors, Mode, Node, NodeWithCost, Solution};
+use crate::HeuristicFn;
+use npuzzle::{neighbors, Mode, NodeWithCost, Solution};
 use std::collections::{BinaryHeap, HashMap};
 use std::time::Instant;
 
-fn reconstruct_path(paths: &HashMap<Node, Node>, node: &Node) -> Vec<Node> {
-    let mut full_path = vec![node.clone()];
+fn reconstruct_path(paths: &HashMap<Vec<i32>, Vec<i32>>, node: &[i32]) -> Vec<Vec<i32>> {
+    let mut full_path = vec![Vec::from(node)];
 
     let mut current = node;
     while paths.contains_key(current) {
         current = &paths[current];
-        full_path.push(current.clone());
+        full_path.push(Vec::from(current));
     }
 
     full_path.reverse();
     full_path
 }
 
-pub fn solve(
-    puzzle: &Puzzle,
-    mode: &str,
-    heuristic: fn(i32, &Node, &Node) -> f64,
-) -> Result<Solution, String> {
+pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solution, String> {
     let now = Instant::now();
     let mode = match mode {
         "greedy" => Mode::Greedy,
@@ -39,9 +36,9 @@ pub fn solve(
         node: puzzle.map.clone(),
     });
     // cameFrom -- best previous path to a node
-    let mut best_path_to_node: HashMap<Node, Node> = HashMap::new();
+    let mut best_path_to_node: HashMap<Vec<i32>, Vec<i32>> = HashMap::new();
     // gScore -- cost of the best path to a node
-    let mut best_cost_to_node: HashMap<Node, f64> = HashMap::new();
+    let mut best_cost_to_node: HashMap<Vec<i32>, f64> = HashMap::new();
     best_cost_to_node.insert(puzzle.map.clone(), 0.);
 
     // Iterate on each cells

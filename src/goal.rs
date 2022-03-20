@@ -1,8 +1,8 @@
-use npuzzle::{Node, SnailIterator};
+use npuzzle::SnailIterator;
 
-pub fn generate_snail(size: i32) -> Result<Node, String> {
+pub fn generate_snail(size: i32) -> Result<Vec<i32>, String> {
     let puzzle_size = size * size;
-    let mut solution: Node = (1..=puzzle_size).collect();
+    let mut solution: Vec<i32> = (1..=puzzle_size).collect();
     let mut iterator = SnailIterator::new(size);
     // Iterate for each cells to add each numbers in "snail" order
     for (index, value) in iterator.by_ref() {
@@ -15,21 +15,21 @@ pub fn generate_snail(size: i32) -> Result<Node, String> {
     Ok(solution)
 }
 
-pub fn generate_first(size: i32) -> Result<Node, String> {
+pub fn generate_first(size: i32) -> Result<Vec<i32>, String> {
     let puzzle_size = size * size;
-    let mut solution: Node = (1..puzzle_size).collect();
+    let mut solution: Vec<i32> = (1..puzzle_size).collect();
     solution.insert(0, 0);
     Ok(solution)
 }
 
-pub fn generate_last(size: i32) -> Result<Node, String> {
+pub fn generate_last(size: i32) -> Result<Vec<i32>, String> {
     let puzzle_size = size * size;
-    let mut solution: Node = (1..puzzle_size).collect();
+    let mut solution: Vec<i32> = (1..puzzle_size).collect();
     solution.push(0);
     Ok(solution)
 }
 
-pub fn generate(size: i32, solution_type: &str) -> Result<Node, String> {
+pub fn generate(size: i32, solution_type: &str) -> Result<Vec<i32>, String> {
     if size < 3 {
         return Err(format!("Invalid size {}, must be at least 3", size));
     }

@@ -1,7 +1,5 @@
-use npuzzle::Node;
-
 // Number of different cells between two Nodes
-pub fn hamming(_: i32, node: &Node, goal: &Node) -> f64 {
+pub fn hamming(_: i32, node: &[i32], goal: &[i32]) -> f64 {
     node.iter()
         .zip(goal)
         .map(|(x, y)| if *x > 0 && x != y { 1. } else { 0. })
@@ -31,7 +29,7 @@ pub fn manhattan_distance(size: i32, index: usize, goal: usize) -> f64 {
 
 // Sum of the manhattan distance for each cell in the Node
 // sum(abs(x - y))
-pub fn manhattan(size: i32, node: &Node, goal: &Node) -> f64 {
+pub fn manhattan(size: i32, node: &[i32], goal: &[i32]) -> f64 {
     node.iter()
         .zip(goal)
         .enumerate()
@@ -69,7 +67,7 @@ fn manhattan_three() {
 
 // Sum of the euclidean distance for each cell in the Node
 // sqrt(sum((x - y) ** 2))
-pub fn euclidean_distance(size: i32, node: &Node, goal: &Node) -> f64 {
+pub fn euclidean_distance(size: i32, node: &[i32], goal: &[i32]) -> f64 {
     node.iter()
         .zip(goal)
         .enumerate()
@@ -104,7 +102,7 @@ fn euclidean_distance_two() {
 
 // Sum of the manhattan distance + linear conflicts for each cell in the Node
 // sum(abs(x - y)) + 2*linear_conflicts
-pub fn linear_conflict(size: i32, node: &Node, goal: &Node) -> f64 {
+pub fn linear_conflict(size: i32, node: &[i32], goal: &[i32]) -> f64 {
     let manhattan_distance = manhattan(size, node, goal);
     let size: usize = size.try_into().unwrap();
     let mut linear_conflicts = 0.;
