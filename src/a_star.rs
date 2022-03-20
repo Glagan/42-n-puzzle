@@ -1,5 +1,5 @@
 use crate::puzzle::Puzzle;
-use npuzzle::{neighbors, Node, NodeWithCost, Solution};
+use npuzzle::{neighbors, Mode, Node, NodeWithCost, Solution};
 use std::collections::{BinaryHeap, HashMap};
 use std::time::Instant;
 
@@ -23,9 +23,9 @@ pub fn solve(
 ) -> Result<Solution, String> {
     let now = Instant::now();
     let mode = match mode {
-        "greedy" => 1,
-        "uniform" => 2,
-        _ => 0,
+        "greedy" => Mode::Greedy,
+        "uniform" => Mode::Uniform,
+        _ => Mode::Normal,
     };
 
     // Summary
@@ -79,9 +79,11 @@ pub fn solve(
                 if !open_set.iter().any(|node| node.node == neighbor) {
                     open_set.push(NodeWithCost {
                         cost: match mode {
-                            0 => next_move_cost + heuristic(puzzle.size, &neighbor, &puzzle.goal),
-                            1 => heuristic(puzzle.size, &neighbor, &puzzle.goal), // Ignore depth
-                            _ => next_move_cost, // Ignore heuristic
+                            Mode::Normal => {
+                                next_move_cost + heuristic(puzzle.size, &neighbor, &puzzle.goal)
+                            }
+                            Mode::Greedy => heuristic(puzzle.size, &neighbor, &puzzle.goal), // Ignore depth
+                            Mode::Uniform => next_move_cost, // Ignore heuristic
                         },
                         node: neighbor,
                     });

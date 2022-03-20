@@ -219,6 +219,12 @@ fn last_line_first_column() {
     assert_eq!(neighbors[3], Some(vec![6, 7, 5, 0, 1, 8, 4, 2, 3]));
 }
 
+pub enum Mode {
+    Normal,
+    Greedy,
+    Uniform,
+}
+
 #[derive(Clone)]
 pub struct NodeWithCost {
     pub cost: f64,
