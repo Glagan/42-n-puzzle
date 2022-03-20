@@ -113,7 +113,7 @@ impl Iterator for SnailIterator {
 
 pub fn neighbors(size: i32, source: &[i32]) -> [Option<Vec<i32>>; 4] {
     let index: i32 = source.iter().position(|&cell| cell == 0).unwrap() as i32;
-    [
+    let mut neighbors = [
         // Left
         {
             if index == 0 || index % size == 0 {
@@ -164,7 +164,9 @@ pub fn neighbors(size: i32, source: &[i32]) -> [Option<Vec<i32>>; 4] {
                 Some(cpy)
             }
         },
-    ]
+    ];
+    neighbors.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    neighbors
 }
 
 #[test]
@@ -254,6 +256,8 @@ pub struct Solution {
     pub biggest_state: usize,
     pub steps: Vec<Vec<i32>>,
 }
+
+pub type HeuristicFn = fn(i32, &[i32], &[i32]) -> f64;
 
 pub fn print_map(size: i32, map: &[i32]) {
     let size: usize = size.try_into().unwrap();

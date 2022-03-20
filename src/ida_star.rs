@@ -1,5 +1,5 @@
-use crate::{puzzle::Puzzle, HeuristicFn};
-use npuzzle::{neighbors, Mode, Solution};
+use crate::puzzle::Puzzle;
+use npuzzle::{neighbors, HeuristicFn, Mode, Solution};
 use std::time::Instant;
 
 pub struct Summary {
@@ -18,6 +18,8 @@ pub struct BranchResult {
     result: Option<Vec<i32>>,
 }
 
+// "unnecessary unwrap" is necessary because two matchs in the same condition make things weird
+#[allow(clippy::unnecessary_unwrap)]
 pub fn evaluate_branch(
     puzzle: &Puzzle,
     summary: &mut Summary,
@@ -45,9 +47,26 @@ pub fn evaluate_branch(
             result: Some(node.clone()),
         };
     }
+    // Sort each neighbors by their heuristic value
+    let mut neighbors = neighbors(puzzle.size, node).map(|neighbor| {
+        if !matches!(mode, Mode::Uniform) && neighbor.is_some() {
+            let neighbor = neighbor.unwrap();
+            (
+                heuristic(puzzle.size, &neighbor, &puzzle.goal),
+                Some(neighbor),
+            )
+        } else {
+            (f64::INFINITY, None)
+        }
+    });
+    neighbors.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
     // Check each neighors
     let mut min = f64::INFINITY;
-    for neighbor in neighbors(puzzle.size, node).into_iter().flatten() {
+    for (_, neighbor) in neighbors.into_iter() {
+        if neighbor.is_none() {
+            continue;
+        }
+        let neighbor = neighbor.unwrap();
         if branch.path.contains(&neighbor) {
             continue;
         }

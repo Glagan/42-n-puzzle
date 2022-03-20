@@ -1,4 +1,4 @@
-use npuzzle::{print_map, Solution};
+use npuzzle::{print_map, HeuristicFn, Solution};
 use puzzle::Puzzle;
 use std::process;
 use std::time::Instant;
@@ -9,8 +9,6 @@ mod goal;
 mod heuristic;
 mod ida_star;
 mod puzzle;
-
-type HeuristicFn = fn(i32, &[i32], &[i32]) -> f64;
 
 type SolveFn = fn(&Puzzle, &str, fn(i32, &[i32], &[i32]) -> f64) -> Result<Solution, String>;
 

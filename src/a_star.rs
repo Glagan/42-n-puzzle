@@ -1,6 +1,5 @@
 use crate::puzzle::Puzzle;
-use crate::HeuristicFn;
-use npuzzle::{neighbors, Mode, NodeWithCost, Solution};
+use npuzzle::{neighbors, HeuristicFn, Mode, NodeWithCost, Solution};
 use std::collections::{BinaryHeap, HashMap};
 use std::time::Instant;
 
