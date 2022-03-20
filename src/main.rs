@@ -102,6 +102,7 @@ fn main() {
     });
 
     //  Solve each puzzles
+    let now = Instant::now();
     if config.files.is_empty() {
         for i in 1..=config.amount {
             println!("# Random Puzzle [{}]", i);
@@ -122,5 +123,18 @@ fn main() {
                 solve_puzzle(&config, &puzzle.unwrap(), solve_fn, heuristic_fn);
             }
         }
+    }
+
+    // Total duration if there was multiple puzzles
+    if (config.files.is_empty() && config.amount > 1) || config.files.len() > 1 {
+        println!(
+            "> Solved {} puzzles in {:.2?}",
+            if config.files.is_empty() {
+                config.amount
+            } else {
+                config.files.len() as u32
+            },
+            now.elapsed()
+        );
     }
 }
