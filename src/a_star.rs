@@ -36,6 +36,9 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
     });
     let mut open_set_ref: HashMap<Vec<i32>, bool> = HashMap::new();
     open_set_ref.insert(puzzle.map.clone(), true);
+    // Keep a reference of already visited nodes to ignore
+    // -- since heuristics needs to be admissibles revisiting a node is unnecessary
+    let mut closed: HashMap<Vec<i32>, bool> = HashMap::new();
     // cameFrom -- best previous path to a node
     let mut best_path_to_node: HashMap<Vec<i32>, Vec<i32>> = HashMap::new();
     // gScore -- cost of the best path to a node
@@ -45,6 +48,7 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
         open_set_ref.remove_entry(&current.node);
+        closed.insert(current.node.clone(), true);
         total_used_states += 1;
 
         // Check if it's the goal
@@ -57,6 +61,11 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
         }
 
         for neighbor in neighbors(puzzle.size, &current.node).into_iter().flatten() {
+            // Ignore nodes already in closed set
+            if closed.contains_key(&neighbor) {
+                continue;
+            }
+
             let next_move_cost = best_cost_to_node.get(&current.node).unwrap() + 1.;
             let neighbor_previous_cost = best_cost_to_node.get(&neighbor);
             // Check the node only if it was never checked or if it has a better cost than the last found
@@ -97,7 +106,7 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
 
         if total_used_states % 100000 == 0 {
             println!(
-                "# Selected {} states in {:.2?}",
+                "#> Explored {} states in {:.2?}",
                 total_used_states,
                 now.elapsed()
             );
