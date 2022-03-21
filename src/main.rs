@@ -104,6 +104,12 @@ fn main() {
     //  Solve each puzzles
     let now = Instant::now();
     if config.files.is_empty() {
+        if config.variant == "ida*" && config.mode == "greedy" && config.size > 4 {
+            println!(
+                "> Greedy mode can't be used with IDA* for puzzle larger than 4 (Stack Overflow)"
+            );
+            return;
+        }
         for i in 1..=config.amount {
             println!("# Random Puzzle [{}]", i);
             let puzzle = Puzzle::generate(config.solvable, config.size, &config.solution_type);
@@ -120,7 +126,12 @@ fn main() {
             if let Err(err) = puzzle {
                 eprintln!("#> {}", err);
             } else {
-                solve_puzzle(&config, &puzzle.unwrap(), solve_fn, heuristic_fn);
+                let puzzle = puzzle.unwrap();
+                if config.variant == "ida*" && config.mode == "greedy" && puzzle.size > 4 {
+                    println!("#> Greedy mode can't be used with IDA* for puzzle larger than 4 (Stack Overflow)");
+                    return;
+                }
+                solve_puzzle(&config, &puzzle, solve_fn, heuristic_fn);
             }
         }
     }
