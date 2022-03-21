@@ -165,7 +165,7 @@ pub fn neighbors(size: i32, source: &[i32]) -> [Option<Vec<i32>>; 4] {
             }
         },
     ];
-    neighbors.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    neighbors.sort_by(|a, b| a.partial_cmp(b).unwrap().reverse());
     neighbors
 }
 
@@ -173,9 +173,9 @@ pub fn neighbors(size: i32, source: &[i32]) -> [Option<Vec<i32>>; 4] {
 fn first_cell() {
     let source = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
     let neighbors = neighbors(3, &source);
-    assert_eq!(neighbors[0], None);
+    assert_eq!(neighbors[0], Some(vec![3, 1, 2, 0, 4, 5, 6, 7, 8]));
     assert_eq!(neighbors[1], Some(vec![1, 0, 2, 3, 4, 5, 6, 7, 8]));
-    assert_eq!(neighbors[2], Some(vec![3, 1, 2, 0, 4, 5, 6, 7, 8]));
+    assert_eq!(neighbors[2], None);
     assert_eq!(neighbors[3], None);
 }
 
@@ -183,9 +183,9 @@ fn first_cell() {
 fn first_line_center() {
     let source = vec![1, 0, 2, 3, 4, 5, 6, 7, 8];
     let neighbors = neighbors(3, &source);
-    assert_eq!(neighbors[0], Some(vec![0, 1, 2, 3, 4, 5, 6, 7, 8]));
+    assert_eq!(neighbors[0], Some(vec![1, 4, 2, 3, 0, 5, 6, 7, 8]));
     assert_eq!(neighbors[1], Some(vec![1, 2, 0, 3, 4, 5, 6, 7, 8]));
-    assert_eq!(neighbors[2], Some(vec![1, 4, 2, 3, 0, 5, 6, 7, 8]));
+    assert_eq!(neighbors[2], Some(vec![0, 1, 2, 3, 4, 5, 6, 7, 8]));
     assert_eq!(neighbors[3], None);
 }
 
@@ -193,30 +193,30 @@ fn first_line_center() {
 fn middle_line_right() {
     let source = vec![1, 4, 2, 3, 5, 0, 6, 7, 8];
     let neighbors = neighbors(3, &source);
-    assert_eq!(neighbors[0], Some(vec![1, 4, 2, 3, 0, 5, 6, 7, 8]));
-    assert_eq!(neighbors[1], None);
-    assert_eq!(neighbors[2], Some(vec![1, 4, 2, 3, 5, 8, 6, 7, 0]));
-    assert_eq!(neighbors[3], Some(vec![1, 4, 0, 3, 5, 2, 6, 7, 8]));
+    assert_eq!(neighbors[0], Some(vec![1, 4, 2, 3, 5, 8, 6, 7, 0]));
+    assert_eq!(neighbors[1], Some(vec![1, 4, 2, 3, 0, 5, 6, 7, 8]));
+    assert_eq!(neighbors[2], Some(vec![1, 4, 0, 3, 5, 2, 6, 7, 8]));
+    assert_eq!(neighbors[3], None);
 }
 
 #[test]
 fn last_line() {
     let source = vec![1, 4, 2, 3, 5, 6, 0, 7, 8];
     let neighbors = neighbors(3, &source);
-    assert_eq!(neighbors[0], None);
-    assert_eq!(neighbors[1], Some(vec![1, 4, 2, 3, 5, 6, 7, 0, 8]));
+    assert_eq!(neighbors[0], Some(vec![1, 4, 2, 3, 5, 6, 7, 0, 8]));
+    assert_eq!(neighbors[1], Some(vec![1, 4, 2, 0, 5, 6, 3, 7, 8]));
     assert_eq!(neighbors[2], None);
-    assert_eq!(neighbors[3], Some(vec![1, 4, 2, 0, 5, 6, 3, 7, 8]));
+    assert_eq!(neighbors[3], None);
 }
 
 #[test]
 fn last_line_first_column() {
     let source = vec![6, 7, 5, 4, 1, 8, 0, 2, 3];
     let neighbors = neighbors(3, &source);
-    assert_eq!(neighbors[0], None);
-    assert_eq!(neighbors[1], Some(vec![6, 7, 5, 4, 1, 8, 2, 0, 3]));
+    assert_eq!(neighbors[0], Some(vec![6, 7, 5, 4, 1, 8, 2, 0, 3]));
+    assert_eq!(neighbors[1], Some(vec![6, 7, 5, 0, 1, 8, 4, 2, 3]));
     assert_eq!(neighbors[2], None);
-    assert_eq!(neighbors[3], Some(vec![6, 7, 5, 0, 1, 8, 4, 2, 3]));
+    assert_eq!(neighbors[3], None);
 }
 
 pub enum Mode {

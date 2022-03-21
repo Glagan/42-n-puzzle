@@ -34,6 +34,8 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
         cost: 0.,
         node: puzzle.map.clone(),
     });
+    let mut open_set_ref: HashMap<Vec<i32>, bool> = HashMap::new();
+    open_set_ref.insert(puzzle.map.clone(), true);
     // cameFrom -- best previous path to a node
     let mut best_path_to_node: HashMap<Vec<i32>, Vec<i32>> = HashMap::new();
     // gScore -- cost of the best path to a node
@@ -42,6 +44,7 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
 
     // Iterate on each cells
     while let Some(current) = open_set.pop() {
+        open_set_ref.remove_entry(&current.node);
         total_used_states += 1;
 
         // Check if it's the goal
@@ -72,7 +75,8 @@ pub fn solve(puzzle: &Puzzle, mode: &str, heuristic: HeuristicFn) -> Result<Solu
                     *best_cost_to_node.get_mut(&neighbor).unwrap() = next_move_cost;
                 }
                 // Add to open_set if it's not already inside
-                if !open_set.iter().any(|node| node.node == neighbor) {
+                if !open_set_ref.contains_key(&neighbor) {
+                    open_set_ref.insert(neighbor.clone(), true);
                     open_set.push(NodeWithCost {
                         cost: match mode {
                             Mode::Normal => {

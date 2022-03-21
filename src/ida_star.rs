@@ -64,7 +64,7 @@ pub fn evaluate_branch(
     let mut min = f64::INFINITY;
     for (_, neighbor) in neighbors.into_iter() {
         if neighbor.is_none() {
-            continue;
+            break;
         }
         let neighbor = neighbor.unwrap();
         if branch.path.contains(&neighbor) {

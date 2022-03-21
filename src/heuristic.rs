@@ -188,7 +188,7 @@ fn linear_conflicts_one() {
 fn linear_conflicts_two() {
     let left = vec![18, 8, 7, 4, 9, 6, 12, 24, 11];
     let right = vec![12, 24, 18, 8, 7, 4, 11, 9, 6];
-    assert_eq!(linear_conflicts(3, &left, &right), 16.)
+    assert_eq!(linear_conflicts(3, &left, &right), 18.)
 }
 
 #[test]
@@ -203,4 +203,11 @@ fn linear_conflicts_four() {
     let left = vec![8, 2, 3, 1, 0, 4, 7, 6, 5];
     let right = vec![1, 2, 3, 8, 0, 4, 7, 6, 5];
     assert_eq!(linear_conflicts(3, &left, &right), 4.)
+}
+
+#[test]
+fn linear_conflicts_five() {
+    let left = vec![4, 2, 5, 1, 0, 6, 3, 8, 7];
+    let right = vec![1, 2, 3, 4, 5, 6, 7, 8, 0];
+    assert_eq!(linear_conflicts(3, &left, &right), 14.)
 }
