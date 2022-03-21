@@ -28,7 +28,8 @@ Options:
     * https://doc.rust-lang.org/std/collections/binary_heap/index.html
 * n-puzzle
     * https://en.wikipedia.org/wiki/15_puzzle#Solvability
-* A*
+* A* and heuristics
     * https://en.wikipedia.org/wiki/A*_search_algorithm
     * https://algorithmsinsight.wordpress.com/graph-theory-2/a-star-in-general/
     * https://www.aaai.org/Papers/AAAI/1996/AAAI96-178.pdf
+    * https://arxiv.org/pdf/1107.0050.pdf
